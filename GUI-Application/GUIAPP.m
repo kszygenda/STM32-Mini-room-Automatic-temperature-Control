@@ -16,6 +16,7 @@ classdef GUIAPP < matlab.apps.AppBase
         SetTempEditField matlab.ui.control.EditField
         MyVector = [];
         t;
+        isStart = 0;
 
     end
         
@@ -40,6 +41,8 @@ classdef GUIAPP < matlab.apps.AppBase
             app.MyVector=[];
             start_time=tic;
             app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) myFunction(app,start_time));
+            app.isStart = 1;
+            disp(app.isStart)
             start(app.t);
         end
 
@@ -58,12 +61,20 @@ classdef GUIAPP < matlab.apps.AppBase
 
         % Button pushed function for PauseButton
         function PauseButtonPushed(app, event)
-            stop(app.t);
+            if app.isStart == 1
+                app.isStart = 0;
+                disp(app.isStart)
+                stop(app.t);
+            end
         end
 
         % Button pushed function for ResumeButton
         function ResumeButtonPushed(app, event)
-            start(app.t);
+            if app.isStart == 0
+                app.isStart = 1;
+                disp(app.isStart)
+                start(app.t);
+            end
         end
 
         % Button pushed function for SaveButton
