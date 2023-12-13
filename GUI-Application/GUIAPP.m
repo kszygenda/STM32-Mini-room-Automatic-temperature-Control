@@ -19,6 +19,7 @@ classdef GUIAPP < matlab.apps.AppBase
         MyVector = [];
         t;
         isRunning = 0;
+        t_plot = [];
 
     end
         
@@ -44,7 +45,6 @@ classdef GUIAPP < matlab.apps.AppBase
             start_time=tic;
             app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) cyclic_function(app,start_time));
             app.isRunning = 1;
-            disp(app.isRunning)
             start(app.t);
         end
 
@@ -53,11 +53,11 @@ classdef GUIAPP < matlab.apps.AppBase
             % Code to collect and plot data
             sample_val = collect_sample(app);
             app.MyVector = [app.MyVector sample_val];
-            new_stop_time=toc(start_time);
+            new_stop_time=toc(start_time);  
             app.TempTrendAxes.XLim = [0 new_stop_time];
-            t_plot = linspace(0, new_stop_time, length(app.MyVector));
+            app.t_plot = linspace(0, new_stop_time, length(app.MyVector));
             app.TempTrendAxes.YLim = [0 max(app.MyVector)+1];
-            plot(app.TempTrendAxes, t_plot, app.MyVector, 'b-');
+            plot(app.TempTrendAxes, app.t_plot, app.MyVector, 'b-');
             drawnow;
         end
 
@@ -65,7 +65,6 @@ classdef GUIAPP < matlab.apps.AppBase
         function PauseButtonPushed(app, event)
             if app.isRunning == 1
                 app.isRunning = 0;
-                disp(app.isRunning)
                 stop(app.t);
             end
         end
@@ -74,15 +73,47 @@ classdef GUIAPP < matlab.apps.AppBase
         function ResumeButtonPushed(app, event)
             if app.isRunning == 0
                 app.isRunning = 1;
-                disp(app.isRunning)
                 start(app.t);
             end
         end
 
         % Button pushed function for SaveButton
         function SaveButtonPushed(app, event)
-            % Code to save current settings or data
+            % Define file types for saving
+            filter = {'*.csv', 'CSV file (*.csv)'; ...
+                      '*.png', 'PNG image (*.png)'; ...
+                      '*.jpg', 'JPEG image (*.jpg)'; ...
+                      '*.pdf', 'PDF file (*.pdf)'};
+
+            % Open save dialog
+            [file, path, indx] = uiputfile(filter, 'Save as');
+
+            % Check if user selected a file
+            if isequal(file, 0) || isequal(path, 0)
+                uialert(app.UIFigure, 'File save cancelled', 'Info');
+            else
+                % Full path of the file
+                filename = fullfile(path, file);
+
+            % Save based on selected file type
+            switch indx
+                case 1 % CSV
+                    % Create a table with time and data
+                    T = table(app.t_plot', app.MyVector', 'VariableNames', {'Time', 'Value'});
+                    % Write table to CSV
+                    writetable(T, filename);
+                case 2 % PNG
+                    exportgraphics(app.TempTrendAxes, filename, 'Resolution', 300);
+                case 3 % JPG
+                    exportgraphics(app.TempTrendAxes, filename, 'Resolution', 300);
+                case 4 % PDF
+                    exportgraphics(app.TempTrendAxes, filename, 'ContentType', 'vector');
+                otherwise
+                    uialert(app.UIFigure, 'Unknown file type selected', 'Error');
+                end
+            end
         end
+        
 
         % Value changing function for SetTempSlider
         function SetTempSliderValueChanged(app, event)
