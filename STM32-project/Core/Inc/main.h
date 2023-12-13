@@ -57,21 +57,31 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define BMP2_SCL_Pin GPIO_PIN_2
+#define BMP2_SCL_GPIO_Port GPIOE
+#define BMP2_CS1_Pin GPIO_PIN_4
+#define BMP2_CS1_GPIO_Port GPIOE
+#define BMP2_SDO_Pin GPIO_PIN_5
+#define BMP2_SDO_GPIO_Port GPIOE
+#define BMP2_SDA_Pin GPIO_PIN_6
+#define BMP2_SDA_GPIO_Port GPIOE
 #define USER_Btn_Pin GPIO_PIN_13
 #define USER_Btn_GPIO_Port GPIOC
 #define USER_Btn_EXTI_IRQn EXTI15_10_IRQn
 #define MCO_Pin GPIO_PIN_0
 #define MCO_GPIO_Port GPIOH
-#define PRZYCISK_1_Pin GPIO_PIN_0
-#define PRZYCISK_1_GPIO_Port GPIOC
-#define PRZYCISK_1_EXTI_IRQn EXTI0_IRQn
 #define RMII_MDC_Pin GPIO_PIN_1
 #define RMII_MDC_GPIO_Port GPIOC
-#define PRZYCISK_2_Pin GPIO_PIN_3
-#define PRZYCISK_2_GPIO_Port GPIOC
-#define PRZYCISK_2_EXTI_IRQn EXTI3_IRQn
 #define RMII_REF_CLK_Pin GPIO_PIN_1
 #define RMII_REF_CLK_GPIO_Port GPIOA
+#define RMII_MDIO_Pin GPIO_PIN_2
+#define RMII_MDIO_GPIO_Port GPIOA
+#define LD4_Pin GPIO_PIN_3
+#define LD4_GPIO_Port GPIOA
+#define LED_RGB_R_Pin GPIO_PIN_5
+#define LED_RGB_R_GPIO_Port GPIOA
+#define ENC_CLK_Pin GPIO_PIN_6
+#define ENC_CLK_GPIO_Port GPIOA
 #define RMII_CRS_DV_Pin GPIO_PIN_7
 #define RMII_CRS_DV_GPIO_Port GPIOA
 #define RMII_RXD0_Pin GPIO_PIN_4
@@ -80,6 +90,10 @@ void Error_Handler(void);
 #define RMII_RXD1_GPIO_Port GPIOC
 #define LD1_Pin GPIO_PIN_0
 #define LD1_GPIO_Port GPIOB
+#define LED_RGB_G_Pin GPIO_PIN_10
+#define LED_RGB_G_GPIO_Port GPIOB
+#define LED_RGB_B_Pin GPIO_PIN_11
+#define LED_RGB_B_GPIO_Port GPIOB
 #define RMII_TXD1_Pin GPIO_PIN_13
 #define RMII_TXD1_GPIO_Port GPIOB
 #define LD3_Pin GPIO_PIN_14
@@ -88,8 +102,10 @@ void Error_Handler(void);
 #define STLK_RX_GPIO_Port GPIOD
 #define STLK_TX_Pin GPIO_PIN_9
 #define STLK_TX_GPIO_Port GPIOD
-#define USB_OverCurrent_Pin GPIO_PIN_7
-#define USB_OverCurrent_GPIO_Port GPIOG
+#define HEATER_Pin GPIO_PIN_13
+#define HEATER_GPIO_Port GPIOD
+#define ENC_DT_Pin GPIO_PIN_7
+#define ENC_DT_GPIO_Port GPIOC
 #define USB_SOF_Pin GPIO_PIN_8
 #define USB_SOF_GPIO_Port GPIOA
 #define USB_VBUS_Pin GPIO_PIN_9
@@ -112,6 +128,10 @@ void Error_Handler(void);
 #define SW0_GPIO_Port GPIOB
 #define LD2_Pin GPIO_PIN_7
 #define LD2_GPIO_Port GPIOB
+#define BH1750_SCL_Pin GPIO_PIN_8
+#define BH1750_SCL_GPIO_Port GPIOB
+#define BH1750_SDA_Pin GPIO_PIN_9
+#define BH1750_SDA_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
