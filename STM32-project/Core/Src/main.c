@@ -18,12 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
-#include "dma.h"
-#include "i2c.h"
-#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "LCD.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -90,12 +88,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
-  MX_I2C1_Init();
-  MX_ADC1_Init();
-  MX_USART3_UART_Init();
+  LCD_init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -104,8 +97,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
-    HAL_Delay(500);
+    	LCD_goto_line(0);
+			LCD_printf("PIWO    ");
+			LCD_goto_line(1);
+			LCD_printf("PIWO PIWO PIWO ");
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

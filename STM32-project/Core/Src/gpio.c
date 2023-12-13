@@ -59,6 +59,7 @@ void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -71,6 +72,16 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, LCD_RS_Pin|LCD_E_Pin|LCD_DB4_Pin|LCD_DB5_Pin
+                          |LCD_DB6_Pin|LCD_DB7_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PE3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PCPin PCPin PCPin */
   GPIO_InitStruct.Pin = USER_Btn_Pin|PRZYCISK_1_Pin|PRZYCISK_2_Pin;
@@ -143,6 +154,15 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USB_VBUS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PDPin PDPin PDPin PDPin
+                           PDPin PDPin */
+  GPIO_InitStruct.Pin = LCD_RS_Pin|LCD_E_Pin|LCD_DB4_Pin|LCD_DB5_Pin
+                          |LCD_DB6_Pin|LCD_DB7_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PGPin PGPin */
   GPIO_InitStruct.Pin = RMII_TX_EN_Pin|RMII_TXD0_Pin;
