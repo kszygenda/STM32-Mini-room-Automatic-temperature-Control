@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "bmp2_config.h"
+#include "LCD.h"
 
 /* USER CODE END Includes */
 
@@ -47,7 +48,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-float temp_read=0.0f;
+int temp_read_int;
+int temp_fractional;
+float temp_read;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,7 +59,13 @@ void SystemClock_Config(void);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if(htim == &htim2){
-	  temp_read=BMP2_ReadTemperature_degC(&bmp2dev_1);
+	  temp_read = BMP2_ReadTemperature_degC(&bmp2dev_1);
+	  temp_read_int = (int)temp_read;
+	  temp_fractional = (int)((temp_read - temp_read_int) * 1000);
+	  LCD_goto_line(0);
+	  LCD_printf("Actual=%d.%03d[C]", temp_read_int, temp_fractional);
+	  LCD_goto_line(1);
+	  LCD_printf("Zad.: %.2f [C]",temp_read);
   }
 }
 
@@ -100,6 +109,7 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   BMP2_Init(&bmp2dev_1);
+  LCD_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -1,3 +1,4 @@
+"./Core/Src/LCD.o"
 "./Core/Src/bmp2.o"
 "./Core/Src/bmp2_config.o"
 "./Core/Src/gpio.o"
