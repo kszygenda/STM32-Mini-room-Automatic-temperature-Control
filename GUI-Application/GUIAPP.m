@@ -7,6 +7,8 @@ classdef GUIAPP < matlab.apps.AppBase
         PauseButton   matlab.ui.control.Button
         ResumeButton  matlab.ui.control.Button
         SaveButton    matlab.ui.control.Button
+        SetButton      matlab.ui.control.Button
+        SimulateButton matlab.ui.control.Button
         SetTempSlider matlab.ui.control.Slider
         CurrentTempLabel matlab.ui.control.Label
         SetTempLabel  matlab.ui.control.Label
@@ -82,6 +84,17 @@ classdef GUIAPP < matlab.apps.AppBase
             % Code to update temperature setting
             app.SetTempSlider.Value = value; % Update slider with edit field value
         end
+
+        % Button pushed function for SetButton
+        function SetButtonPushed(app, event)
+            % Placeholder for Set button functionality
+        end
+
+        % Button pushed function for SimulateButton
+        function SimulateButtonPushed(app, event)
+            % Placeholder for Simulate button functionality
+        end
+
     end
 
     % App initialization and construction
@@ -142,9 +155,22 @@ classdef GUIAPP < matlab.apps.AppBase
 
             % Create SetTempEditField
             app.SetTempEditField = uieditfield(app.UIFigure, 'text');
-            app.SetTempEditField.Position = [app.UIFigure.Position(3) - 100 - 20, 340, 100, 22];
+            app.SetTempEditField.Position = [150, 340, 100, 22];
             app.SetTempEditField.ValueChangedFcn = createCallbackFcn(app, @SetTempEditFieldValueChanged, true);
-            % Now specify that it is a numeric field
+
+            % Create SetButton
+            app.SetButton = uibutton(app.UIFigure, 'push');
+            app.SetButton.Position = [260, 340, 100, 22];
+            app.SetButton.Text = 'Ustaw';
+            app.SetButton.ButtonPushedFcn = createCallbackFcn(app, @SetButtonPushed, true);
+
+            % Create SimulateButton
+            app.SimulateButton = uibutton(app.UIFigure, 'push');
+            app.SimulateButton.Position = [370, 340, 100, 22];
+            app.SimulateButton.Text = 'Zasymuluj';
+            app.SimulateButton.ButtonPushedFcn = createCallbackFcn(app, @SimulateButtonPushed, true);
+
+        
         end
     end
 
