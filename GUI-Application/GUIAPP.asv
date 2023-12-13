@@ -143,21 +143,8 @@ classdef GUIAPP < matlab.apps.AppBase
 
         % Callback function for ConnectButton
         function ConnectButtonPushed(app, event)
-            % Get screen size
-            screenSize = get(groot, 'ScreenSize');
-            screenWidth = screenSize(3);
-            screenHeight = screenSize(4);
-        
-            % Set the size of the UIFigure
-            figureWidth = 300;
-            figureHeight = 200;
-
-             % Calculate the position to center the figure
-            positionX = (screenWidth - figureWidth) / 2;
-            positionY = (screenHeight - figureHeight) / 2;
-
             % Create a new figure for the connection dialog
-            dialog = uifigure('Name', 'Serial Port Connection', 'Position', [positionX, positionY, figureWidth, figureHeight]);
+            dialog = uifigure('Name', 'Serial Port Connection', 'Position', [100 100 300 200]);
         
             % Create a listbox for COM port selection
             comListBox = uilistbox(dialog, 'Position', [20 80 260 70]);
@@ -226,8 +213,7 @@ classdef GUIAPP < matlab.apps.AppBase
             % Create UIFigure
             app.UIFigure = uifigure;
             app.UIFigure.Resize = 'off';
-            app.UIFigure.Position = [positionX, positionY, figureWidth, figureHeight]; % Adjust the size as needed
-            app.UIFigure.Name = 'Temperature Control System';
+            app.UIFigure = uifigure('Position', [positionX, positionY, figureWidth, figureHeight]);            app.UIFigure.Name = 'Temperature Control System';
 
             % Create StartButton
             app.StartButton = uibutton(app.UIFigure, 'push');
