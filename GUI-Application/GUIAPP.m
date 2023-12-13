@@ -2,6 +2,7 @@ classdef GUIAPP < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
+        % GUI variables
         UIFigure      matlab.ui.Figure
         StartButton   matlab.ui.control.Button
         PauseButton   matlab.ui.control.Button
@@ -14,9 +15,10 @@ classdef GUIAPP < matlab.apps.AppBase
         SetTempLabel  matlab.ui.control.Label
         TempTrendAxes matlab.ui.control.UIAxes
         SetTempEditField matlab.ui.control.EditField
+        % Function variables
         MyVector = [];
         t;
-        isStart = 0;
+        isRunning = 0;
 
     end
         
@@ -41,8 +43,8 @@ classdef GUIAPP < matlab.apps.AppBase
             app.MyVector=[];
             start_time=tic;
             app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) myFunction(app,start_time));
-            app.isStart = 1;
-            disp(app.isStart)
+            app.isRunning = 1;
+            disp(app.isRunning)
             start(app.t);
         end
 
@@ -61,18 +63,18 @@ classdef GUIAPP < matlab.apps.AppBase
 
         % Button pushed function for PauseButton
         function PauseButtonPushed(app, event)
-            if app.isStart == 1
-                app.isStart = 0;
-                disp(app.isStart)
+            if app.isRunning == 1
+                app.isRunning = 0;
+                disp(app.isRunning)
                 stop(app.t);
             end
         end
 
         % Button pushed function for ResumeButton
         function ResumeButtonPushed(app, event)
-            if app.isStart == 0
-                app.isStart = 1;
-                disp(app.isStart)
+            if app.isRunning == 0
+                app.isRunning = 1;
+                disp(app.isRunning)
                 start(app.t);
             end
         end
@@ -180,7 +182,6 @@ classdef GUIAPP < matlab.apps.AppBase
             app.SimulateButton.Position = [370, 340, 100, 22];
             app.SimulateButton.Text = 'Zasymuluj';
             app.SimulateButton.ButtonPushedFcn = createCallbackFcn(app, @SimulateButtonPushed, true);
-
         
         end
     end
