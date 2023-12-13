@@ -42,14 +42,14 @@ classdef GUIAPP < matlab.apps.AppBase
             % Code to start temperature regulation\
             app.MyVector=[];
             start_time=tic;
-            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) myFunction(app,start_time));
+            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) cyclic_function(app,start_time));
             app.isRunning = 1;
             disp(app.isRunning)
             start(app.t);
         end
 
         % Funkcja cykliczna 
-        function myFunction(app,start_time)
+        function cyclic_function(app,start_time)
             % Code to collect and plot data
             sample_val = collect_sample(app);
             app.MyVector = [app.MyVector sample_val];
