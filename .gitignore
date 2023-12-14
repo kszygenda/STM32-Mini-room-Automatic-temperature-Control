@@ -1,6 +1,6 @@
-**/build/debug/build
-**/cmake
-**/.vscode
-**/.vs
-**/.settings
-build
+STM32-project/build
+STM32-project/cmake
+STM32-project/.vscode
+STM32-project/.settings
+STM32-project/.vscode
+STM32-project/.vs
