@@ -4,3 +4,5 @@
 **/**/.settings/
 **/**/build/
 STM32-project/build/debug/build/CMakeCache.txt
+STM32-project/build/debug/build/CMakeFiles/CMakeConfigureLog.yaml
+
