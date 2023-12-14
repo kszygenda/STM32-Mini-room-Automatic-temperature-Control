@@ -60,18 +60,38 @@ classdef GUIAPP < matlab.apps.AppBase
         end
         % Button pushed function for StartButton
         function StartButtonPushed(app, event)
-            % Code to start temperature regulation\
-            app.isRunning = 1;
-            app.MyVector=[];
-            app.start_time=[];
-            app.stop_time=[];
-            app.t=[];
-            app.start_time=tic;
-            % Timer użyty jest do cyklicznego wykonywania funkcji
-            % plotującej, dodającej wartości do rysowanej charakterystyki.
-            % Period MUSI być zsynchronizowany z timerem STM32. 
-            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.05, 'TimerFcn', @(~,~) cyclic_function(app));
-            start(app.t);
+            if app.isRunning == 0
+                % Code to start temperature regulation\
+                app.isRunning = 1;
+                app.MyVector=[];
+                app.start_time=[];
+                app.stop_time=[];
+                app.t=[];
+                app.start_time=tic;
+                disp('Starting...')
+                % Timer użyty jest do cyklicznego wykonywania funkcji
+                % plotującej, dodającej wartości do rysowanej charakterystyki.
+                % Period MUSI być zsynchronizowany z timerem STM32. 
+                app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.05, 'TimerFcn', @(~,~) cyclic_function(app));
+                start(app.t);
+            else
+                app.isRunning = 0;
+                disp('Stopping...')
+                stop(app.t); 
+                delete(app.t);
+                app.isRunning = 1;
+                disp('Restarting...')
+                app.MyVector=[];
+                app.start_time=[];
+                app.stop_time=[];
+                app.t=[];
+                app.start_time=tic;
+                % Timer użyty jest do cyklicznego wykonywania funkcji
+                % plotującej, dodającej wartości do rysowanej charakterystyki.
+                % Period MUSI być zsynchronizowany z timerem STM32. 
+                app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.05, 'TimerFcn', @(~,~) cyclic_function(app));
+                start(app.t);
+            end
         end
 
         % Funkcja cykliczna 
@@ -95,9 +115,9 @@ classdef GUIAPP < matlab.apps.AppBase
         function PauseButtonPushed(app, event)
             if app.isRunning == 1
                 app.isRunning = 0;
-                disp(['Funkcja PAUSE, isRunning = ' num2str(app.isRunning)])
+                disp('Paused')
                 stop(app.t); 
-                delete(app.t);
+                %delete(app.t);
             end
         end
 
@@ -105,10 +125,10 @@ classdef GUIAPP < matlab.apps.AppBase
         function ResumeButtonPushed(app, event)
             if app.isRunning == 0
                 app.isRunning = 1;
-                disp(['Funkcja RESUME, isRunning = ' num2str(app.isRunning)])
-                if ~isvalid(app.t)
-                app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.05, 'TimerFcn', @(~,~) cyclic_function(app));
-                end
+                disp('Resumed')
+                %if ~isvalid(app.t)
+                %app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.05, 'TimerFcn', @(~,~) cyclic_function(app));
+                %end
                 start(app.t);
             end
         end
