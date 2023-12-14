@@ -1,8 +1,6 @@
-**/build/debug/build/CMakeCache.txt
-**/cmake
-**/.vscode
-**/.vs
-**/.settings
-**/build
-**/STM32-Project/build
-STM32-project/build/debug/build/CMakeCache.txt
+build/
+cmake/
+.vscode/
+.vs/
+.settings/
+build/
