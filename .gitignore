@@ -1,0 +1,5 @@
+**/build/debug/build
+**/cmake
+**/.vscode
+**/.vs
+**/.settings

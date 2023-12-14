@@ -12,6 +12,7 @@ classdef GUIAPP < matlab.apps.AppBase
         SimulateButton matlab.ui.control.Button
         SetTempSlider matlab.ui.control.Slider
         CurrentTempLabel matlab.ui.control.Label
+        CurrentTemp_data matlab.ui.control.Label
         SetTempLabel  matlab.ui.control.Label
         TempTrendAxes matlab.ui.control.UIAxes
         SetTempEditField matlab.ui.control.EditField
@@ -24,6 +25,7 @@ classdef GUIAPP < matlab.apps.AppBase
         t_plot = [];
         start_time;
         stop_time;
+        
     end
         
     
@@ -81,6 +83,7 @@ classdef GUIAPP < matlab.apps.AppBase
             end
             app.MyVector = [app.MyVector sample_val];
             app.stop_time=toc(app.start_time);  
+            app.CurrentTemp_data.Text = num2str(app.MyVector(end)); 
             app.TempTrendAxes.XLim = [0 app.stop_time];
             app.t_plot = linspace(0, app.stop_time, length(app.MyVector));
             app.TempTrendAxes.YLim = [0 max(app.MyVector)+1];
@@ -93,10 +96,8 @@ classdef GUIAPP < matlab.apps.AppBase
             if app.isRunning == 1
                 app.isRunning = 0;
                 disp(['Funkcja PAUSE, isRunning = ' num2str(app.isRunning)])
-                if isvalid(app.t)
                 stop(app.t); 
                 delete(app.t);
-                end
             end
         end
 
@@ -105,7 +106,9 @@ classdef GUIAPP < matlab.apps.AppBase
             if app.isRunning == 0
                 app.isRunning = 1;
                 disp(['Funkcja RESUME, isRunning = ' num2str(app.isRunning)])
+                if ~isvalid(app.t)
                 app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.05, 'TimerFcn', @(~,~) cyclic_function(app));
+                end
                 start(app.t);
             end
         end
@@ -299,6 +302,11 @@ classdef GUIAPP < matlab.apps.AppBase
             app.CurrentTempLabel = uilabel(app.UIFigure);
             app.CurrentTempLabel.Position = [50, 380, 100, 22];
             app.CurrentTempLabel.Text = 'Current Temp';
+            
+            % Create CurrentTemp_read
+            app.CurrentTemp_data = uilabel(app.UIFigure);
+            app.CurrentTemp_data.Position = [150, 380, 100, 22];
+            app.CurrentTemp_data.Text = '';
 
             % Create SetTempLabel
             app.SetTempLabel = uilabel(app.UIFigure);
