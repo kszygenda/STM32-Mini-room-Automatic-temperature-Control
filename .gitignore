@@ -1,7 +1,5 @@
-build/
-cmake/
-.vscode/
-.vs/
-.settings/
-build/
+**/**/cmake/
+**/**/.vscode/
+**/**/.vs/
+**/**/.settings/
 **/**/build/
