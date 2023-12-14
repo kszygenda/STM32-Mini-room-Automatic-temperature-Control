@@ -27,7 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "bmp2_config.h"
 #include "LCD.h"
-
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,11 +51,14 @@
 int temp_read_int;
 int temp_fractional;
 float temp_read;
+char json_msg[64];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+// Inside the HAL_TIM_PeriodElapsedCallback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if(htim == &htim2){
@@ -66,6 +69,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	  LCD_printf("Actual=%d.%03d[C]", temp_read_int, temp_fractional);
 	  LCD_goto_line(1);
 	  LCD_printf("Zad.: %.2f [C]",temp_read);
+	  int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
+	  HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
   }
 }
 

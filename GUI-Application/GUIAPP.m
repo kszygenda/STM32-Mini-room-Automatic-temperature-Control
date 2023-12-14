@@ -22,42 +22,67 @@ classdef GUIAPP < matlab.apps.AppBase
         t;
         isRunning = 0;
         t_plot = [];
-
+        start_time;
+        stop_time;
     end
         
     
 
     % Callbacks that handle component events
     methods (Access = private)
-
+        %% startup/close functions
         % Code that executes after component creation
         function startupFcn(app)
             % Code to initialize temperature regulation
-
+            username = getenv('USERNAME');
+            disp("Hello " + username + "!");
         end
+        function closeRequestFcn(app, event)
+            % Code that executes when the app is closed
+            clear all;
+            delete(app);
+        end
+        %% Special function section
+        %Function to collect sample from temperature sensor
         function sample_val = collect_sample(app)
             % Code to collect samples from temperature sensor
             % TODO - replace with your code - Implementacja funkcji zbierającej z portu szeregowego
-            sample_val = randi(20);
+            % sample_val = randi(20);
+                str_received_data = fgetl(app.SerialConnection);
+                if ~isempty(str_received_data)
+                    data = jsondecode(str_received_data);
+                    sample_val = data.temperature;
+                else 
+                    sample_val = 0;
+                end
         end
         % Button pushed function for StartButton
         function StartButtonPushed(app, event)
             % Code to start temperature regulation\
-            app.MyVector=[];
-            start_time=tic;
-            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) cyclic_function(app,start_time));
             app.isRunning = 1;
+            app.MyVector=[];
+            app.start_time=[];
+            app.stop_time=[];
+            app.t=[];
+            app.start_time=tic;
+            % Timer użyty jest do cyklicznego wykonywania funkcji
+            % plotującej, dodającej wartości do rysowanej charakterystyki.
+            % Period MUSI być zsynchronizowany z timerem STM32. 
+            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.05, 'TimerFcn', @(~,~) cyclic_function(app));
             start(app.t);
         end
 
         % Funkcja cykliczna 
-        function cyclic_function(app,start_time)
+        function cyclic_function(app)
             % Code to collect and plot data
             sample_val = collect_sample(app);
+            if sample_val == 0
+                sample_val = app.MyVector(end);
+            end
             app.MyVector = [app.MyVector sample_val];
-            new_stop_time=toc(start_time);  
-            app.TempTrendAxes.XLim = [0 new_stop_time];
-            app.t_plot = linspace(0, new_stop_time, length(app.MyVector));
+            app.stop_time=toc(app.start_time);  
+            app.TempTrendAxes.XLim = [0 app.stop_time];
+            app.t_plot = linspace(0, app.stop_time, length(app.MyVector));
             app.TempTrendAxes.YLim = [0 max(app.MyVector)+1];
             plot(app.TempTrendAxes, app.t_plot, app.MyVector, 'b-');
             drawnow;
@@ -67,7 +92,11 @@ classdef GUIAPP < matlab.apps.AppBase
         function PauseButtonPushed(app, event)
             if app.isRunning == 1
                 app.isRunning = 0;
-                stop(app.t);
+                disp(['Funkcja PAUSE, isRunning = ' num2str(app.isRunning)])
+                if isvalid(app.t)
+                stop(app.t); 
+                delete(app.t);
+                end
             end
         end
 
@@ -75,6 +104,8 @@ classdef GUIAPP < matlab.apps.AppBase
         function ResumeButtonPushed(app, event)
             if app.isRunning == 0
                 app.isRunning = 1;
+                disp(['Funkcja RESUME, isRunning = ' num2str(app.isRunning)])
+                app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.05, 'TimerFcn', @(~,~) cyclic_function(app));
                 start(app.t);
             end
         end
