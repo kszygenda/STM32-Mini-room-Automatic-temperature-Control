@@ -14,8 +14,6 @@
 # EXTERNAL cache entries
 ########################
 
-
-
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=C:/ST/STM32CubeIDE_1.13.2/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.11.3.rel1.win32_1.1.1.202309131626/tools/bin/arm-none-eabi-addr2line.exe
 
