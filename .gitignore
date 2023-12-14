@@ -5,3 +5,4 @@
 **/.settings
 **/build
 **/STM32-Project/build
+STM32-project/build/debug/build/CMakeCache.txt
