@@ -27,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "bmp2_config.h"
 #include "LCD.h"
+#include <stdlib.h>
 #include <stdio.h>
 /* USER CODE END Includes */
 
@@ -50,8 +51,17 @@
 /* USER CODE BEGIN PV */
 int temp_read_int;
 int temp_fractional;
+int temp_receivedValue_int;
+int temp_receivedValue_fractional;
 float temp_read;
 char json_msg[64];
+
+#define RX_BUFFER_SIZE 128
+char rxBuffer[RX_BUFFER_SIZE];
+char lastRxBuffer[RX_BUFFER_SIZE];
+volatile uint16_t rxIndex = 0;
+volatile uint8_t dataReceivedFlag = 0;
+float receivedValue;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -61,17 +71,53 @@ void SystemClock_Config(void);
 // Inside the HAL_TIM_PeriodElapsedCallback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if(htim == &htim2){
-	  temp_read = BMP2_ReadTemperature_degC(&bmp2dev_1);
-	  temp_read_int = (int)temp_read;
-	  temp_fractional = (int)((temp_read - temp_read_int) * 1000);
-	  LCD_goto_line(0);
-	  LCD_printf("Actual=%d.%03d[C]", temp_read_int, temp_fractional);
-	  LCD_goto_line(1);
-	  LCD_printf("Zad.: %.2f [C]",temp_read);
-	  int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
-	  HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
-  }
+	if(htim == &htim2){
+		temp_read = BMP2_ReadTemperature_degC(&bmp2dev_1);
+		temp_read_int = (int)temp_read;
+		temp_fractional = (int)((temp_read - temp_read_int) * 1000);
+		LCD_goto_line(0);
+		LCD_printf("Actual=%d.%03d[C]", temp_read_int, temp_fractional);
+
+		if (dataReceivedFlag == 1){
+			dataReceivedFlag = 0;  // Resetuj flagę
+
+			// Konwersja stringa na float
+			receivedValue = atof(rxBuffer);
+			temp_receivedValue_int = (int)receivedValue;
+			temp_receivedValue_fractional = (int)((receivedValue - temp_receivedValue_int) * 1000);
+
+			// Wyświetl odebraną wiadomość
+			LCD_goto_line(1);
+			LCD_printf("Set:%d.%03d[C]       ",  temp_receivedValue_int, temp_receivedValue_fractional);
+
+			// Resetuj rxBuffer
+			memset(rxBuffer, 0, RX_BUFFER_SIZE);
+		}
+
+		int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
+		HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
+	}
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART3)  // Sprawdź, czy przerwanie pochodzi z USART3
+    {
+        if (rxBuffer[rxIndex] == '\r')  // Sprawdź, czy odebrano znak końca linii
+        {
+            dataReceivedFlag = 1;  // Ustaw flagę o odebraniu pełnej wiadomości
+            rxBuffer[rxIndex] = '\0';  // Zamień znak końca linii na znak końca łańcucha
+            rxIndex = 0;  // Resetuj indeks bufora
+        }
+        else
+        {
+            if (++rxIndex >= RX_BUFFER_SIZE)  // Inkrementuj indeks i sprawdź przepełnienie
+            {
+                rxIndex = 0;  // Resetuj indeks bufora
+            }
+        }
+        HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxBuffer[rxIndex], 1);  // Ponownie włącz przerwanie
+    }
 }
 
 /* USER CODE END PFP */
@@ -112,9 +158,16 @@ int main(void)
   MX_USART3_UART_Init();
   MX_SPI4_Init();
   MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   BMP2_Init(&bmp2dev_1);
   LCD_init();
+  memset(lastRxBuffer, 0, RX_BUFFER_SIZE);  // Inicjalizacja lastRxBuffer
+  HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxBuffer[rxIndex], 1);  // Inicjalizacja przerwania odbioru UART
+  HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0); // Przykładowy niższy priorytet
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
