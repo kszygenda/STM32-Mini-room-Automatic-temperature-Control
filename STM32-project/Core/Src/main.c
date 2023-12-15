@@ -101,9 +101,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if (huart->Instance == USART3)  // Sprawdź, czy przerwanie pochodzi z USART3
+	if (huart->Instance == USART3)  // Sprawdź, czy przerwanie pochodzi z USART3
     {
-        if (rxBuffer[rxIndex] == '\r')  // Sprawdź, czy odebrano znak końca linii
+        if (rxBuffer[rxIndex] == '\n')  // Sprawdź, czy odebrano znak końca linii
         {
             dataReceivedFlag = 1;  // Ustaw flagę o odebraniu pełnej wiadomości
             rxBuffer[rxIndex] = '\0';  // Zamień znak końca linii na znak końca łańcucha

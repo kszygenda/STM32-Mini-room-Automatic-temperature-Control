@@ -171,8 +171,28 @@ classdef GUIAPP < matlab.apps.AppBase
 
         % Button pushed function for SetButton
         function SetButtonPushed(app, event)
-            % Placeholder for Set button functionality
+            % Pobierz wartość temperatury i konwertuj na tekst
+            currentTempValue = app.SetTempEditField.Value;
+            tempValueStr = num2str(str2double(currentTempValue), '%.4f'); % Konwersja z zachowaniem 4 miejsc po przecinku
+        
+            % Dodaj znaki końca linii i powrotu karetki do wysyłanej wiadomości
+            messageToSend = [tempValueStr '\r\n'];
+        
+            % Sprawdź, czy połączenie szeregowe jest aktywne
+            if ~isempty(app.SerialConnection) && isvalid(app.SerialConnection)
+                try
+                    % Wyślij dane przez port szeregowy
+                    writeline(app.SerialConnection, messageToSend);
+                catch e
+                    % Wyświetl komunikat o błędzie, jeśli coś pójdzie nie tak
+                    uialert(app.UIFigure, ['Error sending data: ' e.message], 'Send Error');
+                end
+            else
+                % Wyświetl komunikat, jeśli połączenie szeregowe nie jest aktywne
+                uialert(app.UIFigure, 'Serial connection is not established.', 'Connection Error');
+            end
         end
+
 
         % Button pushed function for SimulateButton
         function SimulateButtonPushed(app, event)

@@ -5169,21 +5169,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
  8002a4e:	b082      	sub	sp, #8
  8002a50:	af00      	add	r7, sp, #0
  8002a52:	6078      	str	r0, [r7, #4]
-    if (huart->Instance == USART3)  // Sprawdź, czy przerwanie pochodzi z USART3
+	if (huart->Instance == USART3)  // Sprawdź, czy przerwanie pochodzi z USART3
  8002a54:	687b      	ldr	r3, [r7, #4]
  8002a56:	681b      	ldr	r3, [r3, #0]
  8002a58:	4a1a      	ldr	r2, [pc, #104]	; (8002ac4 <HAL_UART_RxCpltCallback+0x78>)
  8002a5a:	4293      	cmp	r3, r2
  8002a5c:	d12d      	bne.n	8002aba <HAL_UART_RxCpltCallback+0x6e>
     {
-        if (rxBuffer[rxIndex] == '\r')  // Sprawdź, czy odebrano znak końca linii
+        if (rxBuffer[rxIndex] == '\n')  // Sprawdź, czy odebrano znak końca linii
  8002a5e:	4b1a      	ldr	r3, [pc, #104]	; (8002ac8 <HAL_UART_RxCpltCallback+0x7c>)
  8002a60:	881b      	ldrh	r3, [r3, #0]
  8002a62:	b29b      	uxth	r3, r3
  8002a64:	461a      	mov	r2, r3
  8002a66:	4b19      	ldr	r3, [pc, #100]	; (8002acc <HAL_UART_RxCpltCallback+0x80>)
  8002a68:	5c9b      	ldrb	r3, [r3, r2]
- 8002a6a:	2b0d      	cmp	r3, #13
+ 8002a6a:	2b0a      	cmp	r3, #10
  8002a6c:	d10d      	bne.n	8002a8a <HAL_UART_RxCpltCallback+0x3e>
         {
             dataReceivedFlag = 1;  // Ustaw flagę o odebraniu pełnej wiadomości
