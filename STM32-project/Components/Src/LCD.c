@@ -1,6 +1,6 @@
 
 
-#include "LCD.h"
+#include "../Inc/LCD.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdint.h>

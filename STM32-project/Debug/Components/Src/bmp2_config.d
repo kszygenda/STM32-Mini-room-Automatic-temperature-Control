@@ -1,5 +1,6 @@
-Core/Src/bmp2_config.o: ../Core/Src/bmp2_config.c ../Core/Inc/bmp2.h \
- ../Core/Inc/bmp2_defs.h ../Core/Inc/bmp2_config.h ../Core/Inc/bmp2.h \
+Components/Src/bmp2_config.o: ../Components/Src/bmp2_config.c \
+ ../Components/Src/../Inc/bmp2.h ../Components/Src/../Inc/bmp2_defs.h \
+ ../Components/Src/../Inc/bmp2_config.h ../Components/Src/../Inc/bmp2.h \
  ../Core/Inc/main.h ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h \
  ../Core/Inc/stm32f7xx_hal_conf.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h \
@@ -32,11 +33,11 @@ Core/Src/bmp2_config.o: ../Core/Src/bmp2_config.c ../Core/Inc/bmp2.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart_ex.h \
- ../Core/Inc/spi.h
-../Core/Inc/bmp2.h:
-../Core/Inc/bmp2_defs.h:
-../Core/Inc/bmp2_config.h:
-../Core/Inc/bmp2.h:
+ ../Core/Inc/spi.h ../Core/Inc/main.h
+../Components/Src/../Inc/bmp2.h:
+../Components/Src/../Inc/bmp2_defs.h:
+../Components/Src/../Inc/bmp2_config.h:
+../Components/Src/../Inc/bmp2.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Core/Inc/stm32f7xx_hal_conf.h:
@@ -71,3 +72,4 @@ Core/Src/bmp2_config.o: ../Core/Src/bmp2_config.c ../Core/Inc/bmp2.h \
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart_ex.h:
 ../Core/Inc/spi.h:
+../Core/Inc/main.h:

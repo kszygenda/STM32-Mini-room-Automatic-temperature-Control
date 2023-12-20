@@ -1,6 +1,6 @@
 /* Includes ------------------------------------------------------------------*/
-#include "bmp2.h"
-#include "bmp2_config.h"
+#include "../Inc/bmp2.h"
+#include "../Inc/bmp2_config.h"
 
 #include <string.h>
 #include <math.h>

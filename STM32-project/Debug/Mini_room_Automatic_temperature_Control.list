@@ -29,23 +29,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
  12 .comment      00000043  00000000  00000000  00020258  2**0
                   CONTENTS, READONLY
- 13 .debug_info   00015dd7  00000000  00000000  0002029b  2**0
+ 13 .debug_info   00015e46  00000000  00000000  0002029b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_abbrev 000032da  00000000  00000000  00036072  2**0
+ 14 .debug_abbrev 00003301  00000000  00000000  000360e1  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_aranges 00001290  00000000  00000000  00039350  2**3
+ 15 .debug_aranges 00001298  00000000  00000000  000393e8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_rnglists 00000e60  00000000  00000000  0003a5e0  2**0
+ 16 .debug_rnglists 00000e66  00000000  00000000  0003a680  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_macro  00029262  00000000  00000000  0003b440  2**0
+ 17 .debug_macro  00029262  00000000  00000000  0003b4e6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   0001856a  00000000  00000000  000646a2  2**0
+ 18 .debug_line   0001860c  00000000  00000000  00064748  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    000f864c  00000000  00000000  0007cc0c  2**0
+ 19 .debug_str    000f8669  00000000  00000000  0007cd54  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_frame  0000615c  00000000  00000000  00175258  2**2
+ 20 .debug_frame  00006180  00000000  00000000  001753c0  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000088  00000000  00000000  0017b3b4  2**0
+ 21 .debug_line_str 00000074  00000000  00000000  0017b540  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -5012,6 +5012,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  80028e6:	4a49      	ldr	r2, [pc, #292]	; (8002a0c <HAL_TIM_PeriodElapsedCallback+0x130>)
  80028e8:	4293      	cmp	r3, r2
  80028ea:	f040 808b 	bne.w	8002a04 <HAL_TIM_PeriodElapsedCallback+0x128>
+    // Read the temperature with a frequency of 4 Hz. 
 		temp_read = BMP2_ReadTemperature_degC(&bmp2dev_1);
  80028ee:	4848      	ldr	r0, [pc, #288]	; (8002a10 <HAL_TIM_PeriodElapsedCallback+0x134>)
  80028f0:	f7ff fe50 	bl	8002594 <BMP2_ReadTemperature_degC>
@@ -5043,6 +5044,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  800293a:	ee17 2a90 	vmov	r2, s15
  800293e:	4b38      	ldr	r3, [pc, #224]	; (8002a20 <HAL_TIM_PeriodElapsedCallback+0x144>)
  8002940:	601a      	str	r2, [r3, #0]
+		// Write data to LCD
 		LCD_goto_line(0);
  8002942:	2000      	movs	r0, #0
  8002944:	f7fe fd46 	bl	80013d4 <LCD_goto_line>
@@ -5054,7 +5056,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  8002950:	4619      	mov	r1, r3
  8002952:	4834      	ldr	r0, [pc, #208]	; (8002a24 <HAL_TIM_PeriodElapsedCallback+0x148>)
  8002954:	f7fe fd4c 	bl	80013f0 <LCD_printf>
-
+		// Jakiś smiszny debugging dla odczytywania wartości zadaniej
+		// opisać komentarze #TODO @Bartek
 		if (dataReceivedFlag == 1){
  8002958:	4b33      	ldr	r3, [pc, #204]	; (8002a28 <HAL_TIM_PeriodElapsedCallback+0x14c>)
  800295a:	781b      	ldrb	r3, [r3, #0]
@@ -5287,6 +5290,7 @@ int main(void)
   MX_TIM3_Init();
  8002af4:	f000 fac0 	bl	8003078 <MX_TIM3_Init>
   /* USER CODE BEGIN 2 */
+  // Inicjalizacja komponentów zewnętrznych
   BMP2_Init(&bmp2dev_1);
  8002af8:	4811      	ldr	r0, [pc, #68]	; (8002b40 <main+0x68>)
  8002afa:	f7ff fc7f 	bl	80023fc <BMP2_Init>
@@ -5308,6 +5312,7 @@ int main(void)
  8002b1a:	4619      	mov	r1, r3
  8002b1c:	480c      	ldr	r0, [pc, #48]	; (8002b50 <main+0x78>)
  8002b1e:	f003 fe9a 	bl	8006856 <HAL_UART_Receive_IT>
+  //Zmiana priorytetu przerwań, #TODO debugging.
   HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
  8002b22:	2200      	movs	r2, #0
  8002b24:	2105      	movs	r1, #5
@@ -5318,7 +5323,7 @@ int main(void)
  8002b2e:	2106      	movs	r1, #6
  8002b30:	201c      	movs	r0, #28
  8002b32:	f000 fdca 	bl	80036ca <HAL_NVIC_SetPriority>
-
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */

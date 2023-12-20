@@ -40,7 +40,7 @@
  * @brief Sensor driver for BMP2 sensor
  */
 
-#include "bmp2.h"
+#include "../Inc/bmp2.h"
 
 /********************** Static function declarations ************************/
 

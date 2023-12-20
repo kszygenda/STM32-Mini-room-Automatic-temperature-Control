@@ -5,14 +5,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Components/Src/LCD.c \
 ../Components/Src/bmp2.c \
 ../Components/Src/bmp2_config.c 
 
 OBJS += \
+./Components/Src/LCD.o \
 ./Components/Src/bmp2.o \
 ./Components/Src/bmp2_config.o 
 
 C_DEPS += \
+./Components/Src/LCD.d \
 ./Components/Src/bmp2.d \
 ./Components/Src/bmp2_config.d 
 
@@ -24,7 +27,7 @@ Components/Src/%.o Components/Src/%.su Components/Src/%.cyclo: ../Components/Src
 clean: clean-Components-2f-Src
 
 clean-Components-2f-Src:
-	-$(RM) ./Components/Src/bmp2.cyclo ./Components/Src/bmp2.d ./Components/Src/bmp2.o ./Components/Src/bmp2.su ./Components/Src/bmp2_config.cyclo ./Components/Src/bmp2_config.d ./Components/Src/bmp2_config.o ./Components/Src/bmp2_config.su
+	-$(RM) ./Components/Src/LCD.cyclo ./Components/Src/LCD.d ./Components/Src/LCD.o ./Components/Src/LCD.su ./Components/Src/bmp2.cyclo ./Components/Src/bmp2.d ./Components/Src/bmp2.o ./Components/Src/bmp2.su ./Components/Src/bmp2_config.cyclo ./Components/Src/bmp2_config.d ./Components/Src/bmp2_config.o ./Components/Src/bmp2_config.su
 
 .PHONY: clean-Components-2f-Src
 

@@ -25,8 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "bmp2_config.h"
-#include "LCD.h"
+#include "../../Components/Inc/bmp2_config.h"
+#include "../../Components/Inc/LCD.h"
 #include <stdlib.h>
 #include <stdio.h>
 /* USER CODE END Includes */
@@ -49,6 +49,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
 int temp_read_int;
 int temp_fractional;
 int temp_receivedValue_int;
@@ -72,12 +73,15 @@ void SystemClock_Config(void);
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim == &htim2){
+    // Read the temperature with a frequency of 4 Hz. 
 		temp_read = BMP2_ReadTemperature_degC(&bmp2dev_1);
 		temp_read_int = (int)temp_read;
 		temp_fractional = (int)((temp_read - temp_read_int) * 1000);
+		// Write data to LCD
 		LCD_goto_line(0);
 		LCD_printf("Actual=%d.%03d[C]", temp_read_int, temp_fractional);
-
+		// Jakiś smiszny debugging dla odczytywania wartości zadaniej
+		// opisać komentarze #TODO @Bartek
 		if (dataReceivedFlag == 1){
 			dataReceivedFlag = 0;  // Resetuj flagę
 
@@ -118,6 +122,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         }
         HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxBuffer[rxIndex], 1);  // Ponownie włącz przerwanie
     }
+}
+uint32_t calculate_timer_freq(TIM_HandleTypeDef *htim){
+  uint32_t timer_freq = HAL_RCC_GetPCLK1Freq() * 2;
+  uint32_t prescaler = htim->Init.Prescaler + 1;
+  uint32_t Arr = htim->Init.Period + 1;
+  uint32_t freq = timer_freq / (prescaler * Arr);
+  return freq;
 }
 
 /* USER CODE END PFP */
@@ -160,14 +171,17 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+  // Inicjalizacja komponentów zewnętrznych
   BMP2_Init(&bmp2dev_1);
   LCD_init();
   memset(lastRxBuffer, 0, RX_BUFFER_SIZE);  // Inicjalizacja lastRxBuffer
   HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxBuffer[rxIndex], 1);  // Inicjalizacja przerwania odbioru UART
+  //Zmiana priorytetu przerwań, #TODO debugging.
   HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
   HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0); // Przykładowy niższy priorytet
 
-
+  //PID regulator tune
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
