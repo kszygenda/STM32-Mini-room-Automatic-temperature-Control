@@ -26,6 +26,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "../../Components/Inc/bmp2_config.h"
+#include "../../Components/Inc/bmp2.h"
+#include "../../Components/Inc/bmp2_defs.h"
 #include "../../Components/Inc/LCD.h"
 #include <stdlib.h>
 #include <stdio.h>
