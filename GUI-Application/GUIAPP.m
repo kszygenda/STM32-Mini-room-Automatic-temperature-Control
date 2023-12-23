@@ -51,15 +51,15 @@ classdef GUIAPP < matlab.apps.AppBase
             % Code to collect samples from temperature sensor
             % Implementacja funkcji zbierającej z portu szeregowego
                 str_received_data = fgetl(app.SerialConnection);
+                disp(str_received_data)
                 % jeżeli odebrano dane, zdekoduj je z json i zapisz, jeżeli nie to 0.
                 % Obsługa 0 jest później.
                 %EN: if data received, decode it from json and save, if not, save 0.
                 %0 handling is done later.
                 if ~isempty(str_received_data)
-                    data = jsondecode(str_received_data);
-                    sample_val = data.temperature;
-                else 
-                    sample_val = 0;
+                    sample_val = jsondecode(str_received_data);
+                else
+                    sample_val = [];
                 end
         end
         % Button pushed function for StartButton
@@ -90,7 +90,8 @@ classdef GUIAPP < matlab.apps.AppBase
             %starych danych. Debug restartu zbierania danych
             %EN: flush clears serial port buffer, so there are no old data.
             %Debug of data collection restart.
-            flush(app.SerialConnection);
+            flushinput(app.SerialConnection);
+            flushoutput(app.SerialConnection);
             app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) cyclic_function(app));
             start(app.t);
         end
@@ -98,16 +99,17 @@ classdef GUIAPP < matlab.apps.AppBase
         % Funkcja cykliczna 
         function cyclic_function(app)
             % Code to collect and plot data
-            
-            sample_val = collect_sample(app);
+            samples = collect_sample(app);
             % Jeżeli odebrano 0 (brak danych),powtórz ostatnio odebraną wartość
-            % EN: If 0 received (no data), repeat last received value
-            if sample_val == 0
-                sample_val = app.MyVector(end);
+            % If no data received, repeat last received value
+            if isempty(samples)
+                data = app.MyVector(end,:); 
+            else
+                data = [samples.temperature samples.error samples.pwm_power samples.destined];
             end
             % Rozszerzenie wektora o odebraną wartość
             % EN: Extending vector by received value
-            app.MyVector = [app.MyVector sample_val];
+            app.MyVector = [app.MyVector;data];
             % Rysowanie i Aktualizacja wykresu
             % EN: Drawing and updating plot
             app.stop_time=toc(app.start_time);  
@@ -115,7 +117,8 @@ classdef GUIAPP < matlab.apps.AppBase
             app.TempTrendAxes.XLim = [0 app.stop_time];
             app.t_plot = linspace(0, app.stop_time, length(app.MyVector));
             app.TempTrendAxes.YLim = [0 max(app.MyVector)+1];
-            plot(app.TempTrendAxes, app.t_plot, app.MyVector, 'b-');
+            plot(app.TempTrendAxes, app.t_plot, app.MyVector);
+            legend(app.TempTrendAxes, {'Temperature', 'Error', 'PWM power', 'Destined'}, 'Location', 'northwest');
             drawnow;
         end
 
@@ -135,7 +138,8 @@ classdef GUIAPP < matlab.apps.AppBase
                 disp('Resumed')
                 % użyto flush bo zatrzymanie timera nie czyści bufora, dalej są tam wysyłane dane
                 %EN: flush used because timer stop doesn't clear buffer, data is still sent there
-                flush(app.SerialConnection);
+                flushinput(app.SerialConnection);
+                flushoutput(app.SerialConnection);
                 start(app.t);
             end
         end

@@ -641,8 +641,8 @@ Discarded input sections
  .text          0x0000000000000000        0x0 ./Core/Src/main.o
  .data          0x0000000000000000        0x0 ./Core/Src/main.o
  .bss           0x0000000000000000        0x0 ./Core/Src/main.o
- .bss.pid_out   0x0000000000000000        0x4 ./Core/Src/main.o
  .bss.error     0x0000000000000000        0x4 ./Core/Src/main.o
+ .bss.pid_out   0x0000000000000000        0x4 ./Core/Src/main.o
  .debug_macro   0x0000000000000000      0xaa8 ./Core/Src/main.o
  .debug_macro   0x0000000000000000      0x299 ./Core/Src/main.o
  .debug_macro   0x0000000000000000       0x2e ./Core/Src/main.o
@@ -5746,9 +5746,9 @@ LOAD C:/ST/STM32CubeIDE_1.13.2/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.ext
  *(.rodata)
  .rodata        0x000000000800cc78       0x34 ./Components/Src/LCD.o
  .rodata        0x000000000800ccac       0x34 ./Components/Src/bmp2.o
- .rodata        0x000000000800cce0       0x77 ./Core/Src/main.o
+ .rodata        0x000000000800cce0       0x76 ./Core/Src/main.o
  *(.rodata*)
- *fill*         0x000000000800cd57        0x1 
+ *fill*         0x000000000800cd56        0x2 
  .rodata.AHBPrescTable
                 0x000000000800cd58       0x10 ./Core/Src/system_stm32f7xx.o
                 0x000000000800cd58                AHBPrescTable
