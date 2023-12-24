@@ -22,9 +22,11 @@ classdef GUIAPP < matlab.apps.AppBase
         MyVector = [];
         t;
         isRunning = 0;
-        t_plot = [];
+        t_plot = [0];
         start_time;
         stop_time;
+        lgd;
+        plotHandles;
         
     end
         
@@ -38,6 +40,10 @@ classdef GUIAPP < matlab.apps.AppBase
             % Code to initialize app, welcome the user.
             username = getenv('USERNAME');
             disp("Hello " + username + "!");
+            % yyaxis(app.TempTrendAxes,"right")
+            % ylim(app.TempTrendAxes,[0 100])
+            app.plotHandles = plot(app.TempTrendAxes, app.t_plot, nan(1,4));
+            legend(app.TempTrendAxes, {'Temperature', 'Error', 'PWM_POWER','Destined'}, 'Location', 'northwest');
         end
         function closeRequestFcn(app, event)
             % Code that executes when the app is closed
@@ -106,20 +112,30 @@ classdef GUIAPP < matlab.apps.AppBase
                 data = app.MyVector(end,:); 
             else
                 data = [samples.temperature samples.error samples.pwm_power samples.destined];
+                disp(data)
             end
             % Rozszerzenie wektora o odebraną wartość
             % EN: Extending vector by received value
             app.MyVector = [app.MyVector;data];
             % Rysowanie i Aktualizacja wykresu
             % EN: Drawing and updating plot
+            % Odebranie wartości 
+            app.CurrentTemp_data.Text = num2str(app.MyVector(end,1));
+            % Odebranie czasu 
             app.stop_time=toc(app.start_time);  
-            app.CurrentTemp_data.Text = num2str(app.MyVector(end)); 
+            % Ustalenie nowego Xlim na podstawie nowego czasu oraz nowy
+            % wektor czasu do plotowania.
             app.TempTrendAxes.XLim = [0 app.stop_time];
-            app.t_plot = linspace(0, app.stop_time, length(app.MyVector));
-            app.TempTrendAxes.YLim = [0 max(app.MyVector)+1];
-            plot(app.TempTrendAxes, app.t_plot, app.MyVector);
-            legend(app.TempTrendAxes, {'Temperature', 'Error', 'PWM power', 'Destined'}, 'Location', 'northwest');
+            
+            % Lewa strona wykresu destined, current i error
+            for i = [1 2 4 3]
+                app.plotHandles(i).XData = app.t_plot;
+                app.plotHandles(i).YData = app.MyVector(:,i);
+            end
+            app.TempTrendAxes.YLim = [0 max([max(app.MyVector(:,1)) max(app.MyVector(:,4))])];
+            % Prawa strona wykresu, PWM POWER
             drawnow;
+            app.t_plot = [app.t_plot, app.stop_time];
         end
 
         % Button pushed function for PauseButton
