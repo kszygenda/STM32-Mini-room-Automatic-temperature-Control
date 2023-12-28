@@ -40,10 +40,18 @@ classdef GUIAPP < matlab.apps.AppBase
             % Code to initialize app, welcome the user.
             username = getenv('USERNAME');
             disp("Hello " + username + "!");
-            % yyaxis(app.TempTrendAxes,"right")
-            % ylim(app.TempTrendAxes,[0 100])
-            app.plotHandles = plot(app.TempTrendAxes, app.t_plot, nan(1,4));
-            legend(app.TempTrendAxes, {'Temperature', 'Error', 'PWM_POWER','Destined'}, 'Location', 'northwest');
+        
+            % left yyaxis 
+            yyaxis(app.TempTrendAxes, 'left');
+            app.plotHandles(1:3) = plot(app.TempTrendAxes, app.t_plot, nan(1,3));
+            ylim(app.TempTrendAxes, [0 100]);
+            
+            % right y-axis for pwm 
+            yyaxis(app.TempTrendAxes, 'right');
+            app.plotHandles(4) = plot(app.TempTrendAxes, app.t_plot, nan);
+            
+            % legenda
+            legend(app.TempTrendAxes, {'Temperature', 'Error', 'T_set', 'PWM'}, 'Location', 'northwest');
         end
         function closeRequestFcn(app, event)
             % Code that executes when the app is closed
@@ -128,7 +136,7 @@ classdef GUIAPP < matlab.apps.AppBase
             app.TempTrendAxes.XLim = [0 app.stop_time];
             
             % Lewa strona wykresu destined, current i error
-            for i = [1 2 4 3]
+            for i = 1:4
                 app.plotHandles(i).XData = app.t_plot;
                 app.plotHandles(i).YData = app.MyVector(:,i);
             end
