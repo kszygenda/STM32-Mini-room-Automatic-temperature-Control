@@ -16,9 +16,9 @@ uint32_t Calculate_PID_out(float setpoint, float measured) {
     error = setpoint - measured;  // Calculate the error
     pid_out = arm_pid_f32(&PID, error);  // Calculate the PID output
     pwm_duty = (uint32_t)pid_out;  // Convert to PWM
-    if (pwm_duty > 100){
+    if (pwm_duty > 45){
     	// Limit the duty cycle to 100
-    	pwm_duty = 100;
+    	pwm_duty = 45;
     }
     if (pwm_duty < 0){
     	pwm_duty = 0;

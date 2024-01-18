@@ -26,7 +26,7 @@ classdef GUIAPP < matlab.apps.AppBase
         start_time;
         stop_time;
         lgd;
-        plotHandles;
+        plotHandles = zeros(4,1);
         
     end
         
@@ -43,12 +43,12 @@ classdef GUIAPP < matlab.apps.AppBase
         
             % left yyaxis 
             yyaxis(app.TempTrendAxes, 'left');
-            app.plotHandles(1:3) = plot(app.TempTrendAxes, app.t_plot, nan(1,3));
+            app.plotHandles(1:3,1) = plot(app.TempTrendAxes, app.t_plot, nan(1,3));
             ylim(app.TempTrendAxes, [0 100]);
             
             % right y-axis for pwm 
             yyaxis(app.TempTrendAxes, 'right');
-            app.plotHandles(4) = plot(app.TempTrendAxes, app.t_plot, nan);
+            app.plotHandles(4,1) = plot(app.TempTrendAxes, app.t_plot, nan);
             
             % legenda
             legend(app.TempTrendAxes, {'Temperature', 'Error', 'T_set', 'PWM'}, 'Location', 'northwest');
@@ -137,8 +137,10 @@ classdef GUIAPP < matlab.apps.AppBase
             
             % Lewa strona wykresu destined, current i error
             for i = 1:4
-                app.plotHandles(i).XData = app.t_plot;
-                app.plotHandles(i).YData = app.MyVector(:,i);
+                ydata=get(app.plotHandles(i),'YData');
+                xdata=get(app.plotHandles(i),'XData');
+                set(app.plotHandles(i),'XData',app.t_plot);
+                set(app.plotHandles(i),'YData',app.MyVector(:,i));         
             end
             app.TempTrendAxes.YLim = [0 max([max(app.MyVector(:,1)) max(app.MyVector(:,4))])];
             % Prawa strona wykresu, PWM POWER

@@ -58,8 +58,8 @@ int temp_read_int;
 int temp_fractional;
 int temp_receivedValue_int;
 int temp_receivedValue_fractional;
-float temp_read, error, receivedValue=26.0f, pid_out;
-char json_msg[128];
+float temp_read, error, receivedValue, pid_out;
+char json_msg[150];
 uint32_t pwm_duty;
 #define RX_BUFFER_SIZE 128
 char rxBuffer[RX_BUFFER_SIZE];
@@ -83,12 +83,11 @@ uint32_t calculate_timer_freq(TIM_HandleTypeDef *htim){
 void set_pwm_power (TIM_HandleTypeDef *htim, uint32_t pwm_power){
 	if (pwm_power == 0){
 	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, 0);
-	} else {
+	}
 	uint32_t Counter_period = htim->Init.Period;
 	uint32_t pwm_val = (Counter_period*pwm_power)/100.0f;
     __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, (uint32_t)pwm_val);
 	}
-}
 // Inside the HAL_TIM_PeriodElapsedCallback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -120,7 +119,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
     // Calculate the PID output
     pwm_duty = Calculate_PID_out(receivedValue, temp_read);
-    set_pwm_power(&htim2, pwm_duty);
+
+    set_pwm_power(&htim2, pwm_duty+6);
 	int msg_len = sprintf(json_msg, "{\"temperature\": %.2f, \"error\": %.2f, \"pwm_power\": %u, \"destined\": %.2f}\r\n",
 			temp_read,receivedValue-temp_read,pwm_duty,receivedValue);
 	HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
@@ -203,7 +203,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  ARM_PID_Init(5.0f,0.1f/calculate_timer_freq(&htim2),1.0f*calculate_timer_freq(&htim2));
+  ARM_PID_Init(10.0f,2.0f,3.5f);
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   while (1)
