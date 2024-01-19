@@ -72,6 +72,12 @@ volatile uint8_t dataReceivedFlag = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+/**
+ * @brief This function calculates frequency of a timer.
+ * @param htim Timer instance.
+ * @return Frequency of Timer.
+ */
 uint32_t calculate_timer_freq(TIM_HandleTypeDef *htim){
   uint32_t timer_freq = HAL_RCC_GetPCLK1Freq() * 2;
   uint32_t prescaler = htim->Init.Prescaler + 1;
@@ -80,6 +86,11 @@ uint32_t calculate_timer_freq(TIM_HandleTypeDef *htim){
   return freq;
 }
 
+/**
+ * @brief This function sets desired width modulation.
+ * @param htim, pointer to a timer instance, .
+ * @param pwm_power Desired width [%] in PWM Signal.
+ */
 void set_pwm_power (TIM_HandleTypeDef *htim, uint32_t pwm_power){
 	if (pwm_power == 0){
 	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, 0);
