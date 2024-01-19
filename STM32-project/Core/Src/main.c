@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "fatfs.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -30,8 +31,10 @@
 #include "../../Components/Inc/bmp2_defs.h"
 #include "../../Components/Inc/LCD.h"
 #include "../../Components/Inc/pid_controller.h"
+#include "../../Components/Inc/fatfs_sd.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "arm_math.h"
 /* USER CODE END Includes */
 
@@ -58,7 +61,7 @@ int temp_read_int;
 int temp_fractional;
 int temp_receivedValue_int;
 int temp_receivedValue_fractional;
-float temp_read, error, receivedValue=26.0f, pid_out;
+float temp_read, error, receivedValue=35.0f, pid_out;
 char json_msg[128];
 uint32_t pwm_duty;
 #define RX_BUFFER_SIZE 128
@@ -154,6 +157,44 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+FATFS fs; // file system
+FIL fil; // file
+FRESULT fresult; // to store the result
+FRESULT res;
+FRESULT res1;
+FRESULT res2;
+FRESULT res3;
+FRESULT res4;
+FRESULT res5;
+char sd_buffer[1024];
+
+UINT br, bw; // file read/write count
+
+/* capacity related variables */
+FATFS *pfs;
+DWORD fre_clust;
+uint32_t total, free_space;
+
+/* to find the size of data in the buffer */
+int bufsize(char *buf){
+	int i = 0;
+	while (*buf++ != '\0') i++;
+	return i;
+}
+
+// to send data to the uart
+void send_uart(char *string){
+	uint8_t len = strlen(string);
+	HAL_UART_Transmit(&huart3, (uint8_t *) string, len, 1000);
+}
+
+// clear sd_buffer
+void bufclear(void){
+	for (int i=0; i<1024; i++){
+		sd_buffer[i] = '\0';
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -188,12 +229,55 @@ int main(void)
   MX_SPI4_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_SPI3_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   // Inicjalizacja komponentów zewnętrznych
   BMP2_Init(&bmp2dev_1);
   LCD_init();
   memset(lastRxBuffer, 0, RX_BUFFER_SIZE);  // Inicjalizacja lastRxBuffer
   HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxBuffer[rxIndex], 1);  // Inicjalizacja przerwania odbioru UART
+
+  // Mount SD Card
+  fresult = f_mount(&fs, "0:", 0);
+  if (fresult != FR_OK){
+	  send_uart("error in mounting SD CARD...\n");
+  }
+  else {
+	  send_uart("SD CARD mounted successfully...\n");
+  }
+
+  // Card capacity details
+  f_getfree("0:", &fre_clust, &pfs);
+
+  total = (uint32_t)((pfs->n_fatent - 2) * pfs->csize * 0.5);
+  sprintf(sd_buffer, "SD CARD Total Size: \t%lu\n", total);
+  send_uart(sd_buffer);
+  bufclear();
+  free_space = (uint32_t)(fre_clust * pfs->csize * 0.5);
+  sprintf(sd_buffer, "SD CARD Free Space: \t%lu\n", free_space);
+  send_uart(sd_buffer);
+  bufclear();
+
+
+  // File writing
+//  res =  f_unlink("/");
+
+//   Open file to write / create a file if it doesn't exist
+  res1 = f_open(&fil, "file1.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+
+  // Writing text
+  res2 = f_puts("This data is from the first file\n\n", &fil);
+  send_uart("file1.txt cerated and data written\n");
+
+  res3 = f_close(&fil);
+  res4 = f_open(&fil, "file1.txt", FA_READ);
+  f_gets(sd_buffer, sizeof(sd_buffer), &fil);
+  send_uart(sd_buffer);
+  f_close(&fil);
+  bufclear();
+
+
   //Zmiana priorytetu przerwań, #TODO debugging.
   HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
   HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0); // Przykładowy niższy priorytet
