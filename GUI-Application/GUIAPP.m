@@ -30,7 +30,7 @@ classdef GUIAPP < matlab.apps.AppBase
         
     
 
-    % Callbacks that handle component events
+    % Callbacks that handle component events test
     methods (Access = private)
         %% startup/close functions
         % Code that executes after component creation
