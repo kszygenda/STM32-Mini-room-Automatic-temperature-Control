@@ -22,11 +22,9 @@ classdef GUIAPP < matlab.apps.AppBase
         MyVector = [];
         t;
         isRunning = 0;
-        t_plot = [0];
+        t_plot = [];
         start_time;
         stop_time;
-        lgd;
-        plotHandles = zeros(4,1);
         
     end
         
@@ -37,26 +35,12 @@ classdef GUIAPP < matlab.apps.AppBase
         %% startup/close functions
         % Code that executes after component creation
         function startupFcn(app)
-            % Code to initialize app, welcome the user.
+            % Code to initialize temperature regulation
             username = getenv('USERNAME');
             disp("Hello " + username + "!");
-        
-            % left yyaxis 
-            yyaxis(app.TempTrendAxes, 'left');
-            app.plotHandles(1:3,1) = plot(app.TempTrendAxes, app.t_plot, nan(1,3));
-            ylim(app.TempTrendAxes, [0 100]);
-            
-            % right y-axis for pwm 
-            yyaxis(app.TempTrendAxes, 'right');
-            app.plotHandles(4,1) = plot(app.TempTrendAxes, app.t_plot, nan);
-            
-            % legenda
-            legend(app.TempTrendAxes, {'Temperature', 'Error', 'T_set', 'PWM'}, 'Location', 'northwest');
         end
         function closeRequestFcn(app, event)
             % Code that executes when the app is closed
-            % TODO - debugging, potential memory leak(?)
-            clear variables;
             delete(app);
         end
         %% User defined function section
@@ -106,7 +90,7 @@ classdef GUIAPP < matlab.apps.AppBase
             %Debug of data collection restart.
             flushinput(app.SerialConnection);
             flushoutput(app.SerialConnection);
-            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) cyclic_function(app));
+            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.125, 'TimerFcn', @(~,~) cyclic_function(app));
             start(app.t);
         end
 
@@ -128,24 +112,20 @@ classdef GUIAPP < matlab.apps.AppBase
             % Rysowanie i Aktualizacja wykresu
             % EN: Drawing and updating plot
             % Odebranie wartości 
-            app.CurrentTemp_data.Text = num2str(app.MyVector(end,1));
             % Odebranie czasu 
             app.stop_time=toc(app.start_time);  
+            app.CurrentTemp_data.Text = num2str(app.MyVector(end,1));
+
             % Ustalenie nowego Xlim na podstawie nowego czasu oraz nowy
             % wektor czasu do plotowania.
             app.TempTrendAxes.XLim = [0 app.stop_time];
             
             % Lewa strona wykresu destined, current i error
-            for i = 1:4
-                ydata=get(app.plotHandles(i),'YData');
-                xdata=get(app.plotHandles(i),'XData');
-                set(app.plotHandles(i),'XData',app.t_plot);
-                set(app.plotHandles(i),'YData',app.MyVector(:,i));         
-            end
-            app.TempTrendAxes.YLim = [0 max([max(app.MyVector(:,1)) max(app.MyVector(:,4))])];
+            app.t_plot = linsapce(0, app.stop_time, legnth(app.MyVector));
+
+            app.TempTrendAxes.YLim = [0 max(app.MyVector(:,1))];
             % Prawa strona wykresu, PWM POWER
-            drawnow;
-            app.t_plot = [app.t_plot, app.stop_time];
+            plot(app.TempTrendAxes, app.t_plot, app.MyVector(:,1), 'b-')
         end
 
         % Button pushed function for PauseButton
@@ -164,8 +144,7 @@ classdef GUIAPP < matlab.apps.AppBase
                 disp('Resumed')
                 % użyto flush bo zatrzymanie timera nie czyści bufora, dalej są tam wysyłane dane
                 %EN: flush used because timer stop doesn't clear buffer, data is still sent there
-                flushinput(app.SerialConnection);
-                flushoutput(app.SerialConnection);
+                flush(app.SerialConnection);
                 start(app.t);
             end
         end
