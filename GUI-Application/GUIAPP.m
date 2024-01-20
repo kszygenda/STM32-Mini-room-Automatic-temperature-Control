@@ -30,7 +30,7 @@ classdef GUIAPP < matlab.apps.AppBase
         
     
 
-    % Callbacks that handle component events test
+    % Callbacks that handle component events
     methods (Access = private)
         %% startup/close functions
         % Code that executes after component creation
@@ -41,29 +41,25 @@ classdef GUIAPP < matlab.apps.AppBase
         end
         function closeRequestFcn(app, event)
             % Code that executes when the app is closed
+            clear all;
             delete(app);
         end
-        %% User defined function section
+        %% Special function section
         %Function to collect sample from temperature sensor
         function sample_val = collect_sample(app)
             % Code to collect samples from temperature sensor
-            % Implementacja funkcji zbierającej z portu szeregowego
+            % TODO - replace with your code - Implementacja funkcji zbierającej z portu szeregowego
+            % sample_val = randi(20);
                 str_received_data = fgetl(app.SerialConnection);
-                disp(str_received_data)
-                % jeżeli odebrano dane, zdekoduj je z json i zapisz, jeżeli nie to 0.
-                % Obsługa 0 jest później.
-                %EN: if data received, decode it from json and save, if not, save 0.
-                %0 handling is done later.
                 if ~isempty(str_received_data)
-                    sample_val = jsondecode(str_received_data);
-                else
-                    sample_val = [];
+                    data = jsondecode(str_received_data);
+                    sample_val = data.temperature;
+                else 
+                    sample_val = 0;
                 end
         end
         % Button pushed function for StartButton
         function StartButtonPushed(app, event)
-            %Flaga isrunning do obługi logiki przycisków,
-            %EN: isrunning flag to handle buttons logic
             if app.isRunning == 1
                 app.isRunning = 0;
                 disp('Stopping...')
@@ -79,53 +75,27 @@ classdef GUIAPP < matlab.apps.AppBase
             disp('Starting...')
             % Timer użyty jest do cyklicznego wykonywania funkcji
             % plotującej, dodającej wartości do rysowanej charakterystyki.
-            % Period powinien być mniejszy od timera STM32. 
-            %EN: Timer is used to cyclically execute plotting function,
-            %adding values to drawn characteristic. Period SHOULD be
-            %lower than STM32 timer.
-
-            %flush czyści bufor portu szeregowego, aby nie było w nim
-            %starych danych. Debug restartu zbierania danych
-            %EN: flush clears serial port buffer, so there are no old data.
-            %Debug of data collection restart.
-            flushinput(app.SerialConnection);
-            flushoutput(app.SerialConnection);
-            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.125, 'TimerFcn', @(~,~) cyclic_function(app));
+            % Period MUSI być zsynchronizowany z timerem STM32. 
+            flush(app.SerialConnection);
+            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) cyclic_function(app));
             start(app.t);
         end
 
         % Funkcja cykliczna 
         function cyclic_function(app)
             % Code to collect and plot data
-            samples = collect_sample(app);
-            % Jeżeli odebrano 0 (brak danych),powtórz ostatnio odebraną wartość
-            % If no data received, repeat last received value
-            if isempty(samples)
-                data = app.MyVector(end,:); 
-            else
-                data = [samples.temperature samples.error samples.pwm_power samples.destined];
-                disp(data)
+            sample_val = collect_sample(app);
+            if sample_val == 0
+                sample_val = app.MyVector(end);
             end
-            % Rozszerzenie wektora o odebraną wartość
-            % EN: Extending vector by received value
-            app.MyVector = [app.MyVector;data];
-            % Rysowanie i Aktualizacja wykresu
-            % EN: Drawing and updating plot
-            % Odebranie wartości 
-            % Odebranie czasu 
+            app.MyVector = [app.MyVector sample_val];
             app.stop_time=toc(app.start_time);  
-            app.CurrentTemp_data.Text = num2str(app.MyVector(end,1));
-
-            % Ustalenie nowego Xlim na podstawie nowego czasu oraz nowy
-            % wektor czasu do plotowania.
+            app.CurrentTemp_data.Text = num2str(app.MyVector(end)); 
             app.TempTrendAxes.XLim = [0 app.stop_time];
-            
-            % Lewa strona wykresu destined, current i error
-            app.t_plot = linsapce(0, app.stop_time, legnth(app.MyVector));
-
-            app.TempTrendAxes.YLim = [0 max(app.MyVector(:,1))];
-            % Prawa strona wykresu, PWM POWER
-            plot(app.TempTrendAxes, app.t_plot, app.MyVector(:,1), 'b-')
+            app.t_plot = linspace(0, app.stop_time, length(app.MyVector));
+            app.TempTrendAxes.YLim = [0 max(app.MyVector)+1];
+            plot(app.TempTrendAxes, app.t_plot, app.MyVector, 'b-');
+            drawnow;
         end
 
         % Button pushed function for PauseButton
@@ -142,8 +112,6 @@ classdef GUIAPP < matlab.apps.AppBase
             if app.isRunning == 0
                 app.isRunning = 1;
                 disp('Resumed')
-                % użyto flush bo zatrzymanie timera nie czyści bufora, dalej są tam wysyłane dane
-                %EN: flush used because timer stop doesn't clear buffer, data is still sent there
                 flush(app.SerialConnection);
                 start(app.t);
             end
@@ -168,33 +136,33 @@ classdef GUIAPP < matlab.apps.AppBase
                 filename = fullfile(path, file);
 
             % Save based on selected file type
-                switch indx
-                    case 1 % CSV
-                        % Create a table with time and data
-                        T = table(app.t_plot', app.MyVector', 'VariableNames', {'Time', 'Value'});
-                        % Write table to CSV
-                        writetable(T, filename);
-                    case 2 % PNG
-                        exportgraphics(app.TempTrendAxes, filename, 'Resolution', 300);
-                    case 3 % JPG
-                        exportgraphics(app.TempTrendAxes, filename, 'Resolution', 300);
-                    case 4 % PDF
-                        exportgraphics(app.TempTrendAxes, filename, 'ContentType', 'vector');
-                    otherwise
-                        uialert(app.UIFigure, 'Unknown file type selected', 'Error');
+            switch indx
+                case 1 % CSV
+                    % Create a table with time and data
+                    T = table(app.t_plot', app.MyVector', 'VariableNames', {'Time', 'Value'});
+                    % Write table to CSV
+                    writetable(T, filename);
+                case 2 % PNG
+                    exportgraphics(app.TempTrendAxes, filename, 'Resolution', 300);
+                case 3 % JPG
+                    exportgraphics(app.TempTrendAxes, filename, 'Resolution', 300);
+                case 4 % PDF
+                    exportgraphics(app.TempTrendAxes, filename, 'ContentType', 'vector');
+                otherwise
+                    uialert(app.UIFigure, 'Unknown file type selected', 'Error');
                 end
             end
         end
         
 
-        % Value changing function for Slider
+        % Value changing function for SetTempSlider
         function SetTempSliderValueChanged(app, event)
             value = app.SetTempSlider.Value;
             % Code to update temperature setting
             app.SetTempEditField.Value = num2str(value); % Update edit field with slider value
         end
         
-        % Value changing function for Edit Field
+        % Value changing function for SetTempEditField
         function SetTempEditFieldValueChanged(app, event)
             value = str2double(app.SetTempEditField.Value);
             % Code to update temperature setting
@@ -227,7 +195,6 @@ classdef GUIAPP < matlab.apps.AppBase
 
 
         % Button pushed function for SimulateButton
-        % TODO: Estimate transfer function parameters,
         function SimulateButtonPushed(app, event)
             % Placeholder for Simulate button functionality
         end
@@ -296,7 +263,7 @@ classdef GUIAPP < matlab.apps.AppBase
             end
         end
 
-    %% App initialization and construction - wielkosc/pozycja okna i przyciskow czyli wyglad UI
+    % App initialization and construction
     methods (Access = private)
 
         % Create UIFigure and components

@@ -59,7 +59,7 @@ int temp_fractional;
 int temp_receivedValue_int;
 int temp_receivedValue_fractional;
 float temp_read, error, receivedValue, pid_out;
-char json_msg[150];
+char json_msg[64];
 uint32_t pwm_duty;
 #define RX_BUFFER_SIZE 128
 char rxBuffer[RX_BUFFER_SIZE];
@@ -132,9 +132,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     pwm_duty = Calculate_PID_out(receivedValue, temp_read);
 
     set_pwm_power(&htim2, pwm_duty);
-	int msg_len = sprintf(json_msg, "{\"temperature\": %.2f, \"error\": %.2f, \"pwm_power\": %u, \"destined\": %.2f}\r\n",
-			temp_read,receivedValue-temp_read,pwm_duty,receivedValue);
-	HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
+
+    int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
+		HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
 	}
 }
 
