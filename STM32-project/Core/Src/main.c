@@ -131,7 +131,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     // Calculate the PID output
     pwm_duty = Calculate_PID_out(receivedValue, temp_read);
 
-    set_pwm_power(&htim2, pwm_duty+6);
+    set_pwm_power(&htim2, pwm_duty);
 	int msg_len = sprintf(json_msg, "{\"temperature\": %.2f, \"error\": %.2f, \"pwm_power\": %u, \"destined\": %.2f}\r\n",
 			temp_read,receivedValue-temp_read,pwm_duty,receivedValue);
 	HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
@@ -214,7 +214,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  ARM_PID_Init(10.0f,2.0f,3.5f);
+  ARM_PID_Init(2.5f,0.0f,53.639f);
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   while (1)

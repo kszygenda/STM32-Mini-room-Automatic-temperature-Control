@@ -61,8 +61,8 @@ all: main-build
 main-build: Mini_room_Automatic_temperature_Control.elf secondary-outputs
 
 # Tool invocations
-Mini_room_Automatic_temperature_Control.elf Mini_room_Automatic_temperature_Control.map: $(OBJS) $(USER_OBJS) E:\Polibuda\5\SM\proj_lab\Git\STM32-Mini-room-Automatic-temperature-Control\STM32-project\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Mini_room_Automatic_temperature_Control.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"E:\Polibuda\5\SM\proj_lab\Git\STM32-Mini-room-Automatic-temperature-Control\STM32-project\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Mini_room_Automatic_temperature_Control.map" -Wl,--gc-sections -static -L"C:\Users\bszal\STM32Cube\Repository\Packs\ARM\CMSIS\5.7.0\CMSIS\DSP\Lib\GCC" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Mini_room_Automatic_temperature_Control.elf Mini_room_Automatic_temperature_Control.map: $(OBJS) $(USER_OBJS) C:\Users\macie\Desktop\semestr\ 5\systemy\ mikroprocesorowe\projekt\STM32-Mini-room-Automatic-temperature-Control\STM32-project\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Mini_room_Automatic_temperature_Control.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\macie\Desktop\semestr 5\systemy mikroprocesorowe\projekt\STM32-Mini-room-Automatic-temperature-Control\STM32-project\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Mini_room_Automatic_temperature_Control.map" -Wl,--gc-sections -static -L"C:\Users\macie\STM32Cube\Repository\Packs\ARM\CMSIS\5.7.0\CMSIS\DSP\Lib\GCC" --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
