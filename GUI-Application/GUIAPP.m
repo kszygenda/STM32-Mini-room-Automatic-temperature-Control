@@ -93,7 +93,7 @@ classdef GUIAPP < matlab.apps.AppBase
             app.CurrentTemp_data.Text = num2str(app.MyVector(end)); 
             app.TempTrendAxes.XLim = [0 app.stop_time];
             app.t_plot = linspace(0, app.stop_time, length(app.MyVector));
-            app.TempTrendAxes.YLim = [0 max(app.MyVector)+1];
+            app.TempTrendAxes.YLim = [20 max(app.MyVector)+1];
             plot(app.TempTrendAxes, app.t_plot, app.MyVector, 'b-');
             drawnow;
         end
