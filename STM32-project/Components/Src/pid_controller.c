@@ -45,13 +45,19 @@ uint32_t Calculate_PID_out(float setpoint, float measured) {
 //    }
 
 //    last_pwm_duty = 0;
+	if (measured < setpoint - 3){
+		last_pwm_duty = (int)setpoint*0.2;
+	}
+//	else if (measured > setpoint){
+//		last_pwm_duty = 0;
+//	}
+	else if(measured < setpoint - 0.0849) {
+    	last_pwm_duty = (int)setpoint*0.11;
+    }
+    else if(measured > setpoint - 0.085) {
+        last_pwm_duty = 0;
+    }
 
-    if(measured < setpoint + 0.05) {
-    	last_pwm_duty = (int)setpoint*0.25;
-    }
-    else if(measured > setpoint + 0.08) {
-        last_pwm_duty = (int)setpoint*0.08;
-    }
     return last_pwm_duty;
 
 
