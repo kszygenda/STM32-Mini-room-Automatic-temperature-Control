@@ -78,8 +78,6 @@ void Error_Handler(void);
 #define RMII_MDIO_GPIO_Port GPIOA
 #define LD4_Pin GPIO_PIN_3
 #define LD4_GPIO_Port GPIOA
-#define LED_RGB_R_Pin GPIO_PIN_5
-#define LED_RGB_R_GPIO_Port GPIOA
 #define ENC_CLK_Pin GPIO_PIN_6
 #define ENC_CLK_GPIO_Port GPIOA
 #define RMII_CRS_DV_Pin GPIO_PIN_7
