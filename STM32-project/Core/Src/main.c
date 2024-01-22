@@ -29,7 +29,7 @@
 #include "../../Components/Inc/bmp2.h"
 #include "../../Components/Inc/bmp2_defs.h"
 #include "../../Components/Inc/LCD.h"
-#include "../../Components/Inc/pid_controller.h"
+#include "../../Components/Inc/pid_controller_config.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "arm_math.h"
@@ -60,7 +60,7 @@ int temp_receivedValue_int;
 int temp_receivedValue_fractional;
 float temp_read, error, receivedValue, pid_out;
 char json_msg[64];
-uint32_t pwm_duty;
+float pwm_duty;
 #define RX_BUFFER_SIZE 128
 char rxBuffer[RX_BUFFER_SIZE];
 char lastRxBuffer[RX_BUFFER_SIZE];
@@ -91,7 +91,7 @@ uint32_t calculate_timer_freq(TIM_HandleTypeDef *htim){
  * @param htim, pointer to a timer instance, .
  * @param pwm_power Desired width [%] in PWM Signal.
  */
-void set_pwm_power (TIM_HandleTypeDef *htim, uint32_t pwm_power){
+void set_pwm_power (TIM_HandleTypeDef *htim, float pwm_power){
 	if (pwm_power == 0){
 	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, 0);
 	}
@@ -129,7 +129,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 
     // Calculate the PID output
-    pwm_duty = Calculate_PID_out(receivedValue, temp_read);
+//    pwm_duty = Calculate_PID_out(receivedValue, temp_read);
+	pwm_duty = PID_GetOutput(&hpid1, receivedValue, temp_read);
 
     set_pwm_power(&htim2, pwm_duty);
 
@@ -214,7 +215,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  ARM_PID_Init(2.5f,0.0f,53.639f);
+//  ARM_PID_Init(2.5f,0.0f,53.639f);
+  PID_Init(&hpid1);
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   while (1)
