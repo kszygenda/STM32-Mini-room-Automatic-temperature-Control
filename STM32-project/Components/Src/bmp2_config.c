@@ -63,7 +63,7 @@ int8_t BMP2_Init(struct bmp2_dev* dev)
   /* Over-sampling mode is set as ultra low resolution i.e., os_pres = 1x and os_temp = 1x */
   conf.os_mode = BMP2_OS_MODE_ULTRA_LOW_POWER;
   /* Setting the output data rate */
-  conf.odr = BMP2_ODR_250_MS;
+  conf.odr = BMP2_ODR_62_5_MS;
 
   rslt = bmp2_set_config(&conf, dev);
 

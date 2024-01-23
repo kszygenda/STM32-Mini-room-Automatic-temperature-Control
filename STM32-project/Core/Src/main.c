@@ -66,6 +66,7 @@ char rxBuffer[RX_BUFFER_SIZE];
 char lastRxBuffer[RX_BUFFER_SIZE];
 volatile uint16_t rxIndex = 0;
 volatile uint8_t dataReceivedFlag = 0;
+static uint32_t prev_encoder_val;
 
 /* USER CODE END PV */
 
@@ -73,23 +74,12 @@ volatile uint8_t dataReceivedFlag = 0;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
-/**
- * @brief This function calculates frequency of a timer.
- * @param htim Timer instance.
- * @return Frequency of Timer.
- */
-uint32_t calculate_timer_freq(TIM_HandleTypeDef *htim){
-  uint32_t timer_freq = HAL_RCC_GetPCLK1Freq() * 2;
-  uint32_t prescaler = htim->Init.Prescaler + 1;
-  uint32_t Arr = htim->Init.Period + 1;
-  uint32_t freq = timer_freq / (prescaler * Arr);
-  return freq;
-}
+
 
 /**
  * @brief This function sets desired width modulation.
- * @param htim, pointer to a timer instance, .
- * @param pwm_power Desired width [%] in PWM Signal.
+ * @param[in] htim, pointer to a timer instance, .
+ * @param[in] pwm_power Desired width [%] in PWM Signal.
  */
 void set_pwm_power (TIM_HandleTypeDef *htim, float pwm_power){
 	if (pwm_power == 0){
@@ -99,12 +89,54 @@ void set_pwm_power (TIM_HandleTypeDef *htim, float pwm_power){
 	uint32_t pwm_val = (Counter_period*pwm_power)/100.0f;
     __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, (uint32_t)pwm_val);
 	}
+/**
+ * @brief This function adjusts destined temperature via encoder.
+ * @param[in] Destined temperature.
+ * @return [-].
+ */
+
+float encoder_destined_set(float Destined_temperature) {
+    uint32_t encoder_val = htim3.Instance->CNT;
+    int32_t diff = encoder_val - prev_encoder_val;
+
+
+
+    // Handle wrap-around cases
+    if ((encoder_val == 0 && prev_encoder_val == 80) || diff > 0) {
+        Destined_temperature += 0.5f;
+    } else if ((encoder_val == 80 && prev_encoder_val == 0) || diff < 0) {
+        Destined_temperature -= 0.5f;
+    }
+
+    if (Destined_temperature <= 25.0f){
+    	Destined_temperature = 25.0f;
+    }
+    else if (Destined_temperature >= 60.0f){
+    	Destined_temperature = 60.0f;
+    }
+
+
+    // Update previous encoder value for the next call
+    prev_encoder_val = encoder_val;
+
+    temp_receivedValue_int = (int)Destined_temperature;
+    temp_receivedValue_fractional = (int)((Destined_temperature - temp_receivedValue_int) * 1000);
+
+    LCD_goto_line(1);
+    LCD_printf("Set:%d.%03d[C]       ",  temp_receivedValue_int, temp_receivedValue_fractional);
+
+
+    return Destined_temperature;
+}
+
+
 // Inside the HAL_TIM_PeriodElapsedCallback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim == &htim2){
     // Read the temperature with a frequency of 4 Hz. 
 		temp_read = BMP2_ReadTemperature_degC(&bmp2dev_1);
+		receivedValue = encoder_destined_set(receivedValue);
 		temp_read_int = (int)temp_read;
 		temp_fractional = (int)((temp_read - temp_read_int) * 1000);
 		// Write data to LCD
@@ -126,16 +158,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 			// Resetuj rxBuffer
 			memset(rxBuffer, 0, RX_BUFFER_SIZE);
+
 		}
+		pwm_duty = PID_GetOutput(&hpid1, receivedValue, temp_read);
+	    set_pwm_power(&htim2, pwm_duty);
+	    int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
+			HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
 
-    // Calculate the PID output
-//    pwm_duty = Calculate_PID_out(receivedValue, temp_read);
-	pwm_duty = PID_GetOutput(&hpid1, receivedValue, temp_read);
-
-    set_pwm_power(&htim2, pwm_duty);
-
-    int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
-		HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
 	}
 }
 
@@ -219,6 +248,7 @@ int main(void)
   PID_Init(&hpid1);
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_Encoder_Start(&htim3,TIM_CHANNEL_ALL);
   while (1)
   {
     /* USER CODE END WHILE */
