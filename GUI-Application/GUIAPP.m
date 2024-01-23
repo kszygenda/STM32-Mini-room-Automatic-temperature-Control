@@ -65,6 +65,7 @@ classdef GUIAPP < matlab.apps.AppBase
                 delete(app.t);
             end
             app.isRunning = 1;
+            app.SaveButton.Visible = false;
             app.MyVector=[];      
             app.start_time=[];
             app.stop_time=[];
@@ -136,6 +137,7 @@ classdef GUIAPP < matlab.apps.AppBase
             if app.isRunning == 1
                 app.isRunning = 0;
                 disp('Paused')
+                app.SaveButton.Visible = true;
                 stop(app.t); 
             end
         end
@@ -145,6 +147,7 @@ classdef GUIAPP < matlab.apps.AppBase
             if app.isRunning == 0
                 app.isRunning = 1;
                 disp('Resumed')
+                app.SaveButton.Visible = false;
                 flush(app.SerialConnection);
                 start(app.t);
             end
@@ -172,8 +175,7 @@ classdef GUIAPP < matlab.apps.AppBase
             switch indx
                 case 1 % CSV
                     % Create a table with time and data
-                    T = table(app.t_plot', app.MyVector', 'VariableNames', {'Time', 'Value'});
-                    % Write table to CSV
+                    T = table(app.t_plot', app.MyVector(:, 1), app.MyVector(:, 4), app.MyVector(:, 3), 'VariableNames', {'Time', 'Current_Temp', 'Target', 'Pwm_duty'});
                     writetable(T, filename);
                 case 2 % PNG
                     exportgraphics(app.TempTrendAxes, filename, 'Resolution', 300);
@@ -202,8 +204,8 @@ classdef GUIAPP < matlab.apps.AppBase
             % Sprawdzanie, czy wartość mieści się w dozwolonym zakresie
             if value < 25 || value > 60
                 % Wyświetlenie ostrzeżenia i ustawienie wartości na najbliższą dozwoloną
-                uialert(app.UIFigure, 'The temperature value must be between 25 and 60 degrees.', 'Temperature range error');
-                value = max(25, min(value, 60));
+                uialert(app.UIFigure, 'The temperature value must be between 25 and 60 degrees. The default temperature is set (25 degrees celcius)', 'Temperature range error');
+                value = min(25, min(value, 60));
                 app.SetTempEditField.Value = num2str(value);
             end
             app.SetTempSlider.Value = value; % Aktualizacja suwaka
@@ -344,6 +346,7 @@ classdef GUIAPP < matlab.apps.AppBase
             app.SaveButton = uibutton(app.UIFigure, 'push');
             app.SaveButton.Position = [380, 420, 100, 22];
             app.SaveButton.Text = 'Save';
+            app.SaveButton.Visible = false;
             app.SaveButton.ButtonPushedFcn = createCallbackFcn(app, @SaveButtonPushed, true);
 
             % Create ConnectButton
