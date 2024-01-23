@@ -1,6 +1,8 @@
 "./Components/Src/LCD.o"
 "./Components/Src/bmp2.o"
 "./Components/Src/bmp2_config.o"
+"./Components/Src/pid_controller.o"
+"./Components/Src/pid_controller_config.o"
 "./Core/Src/gpio.o"
 "./Core/Src/main.o"
 "./Core/Src/spi.o"

@@ -29,8 +29,10 @@
 #include "../../Components/Inc/bmp2.h"
 #include "../../Components/Inc/bmp2_defs.h"
 #include "../../Components/Inc/LCD.h"
+#include "../../Components/Inc/pid_controller_config.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "arm_math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,21 +58,47 @@ int temp_read_int;
 int temp_fractional;
 int temp_receivedValue_int;
 int temp_receivedValue_fractional;
-float temp_read;
+float temp_read, error, receivedValue, pid_out;
 char json_msg[64];
-
+float pwm_duty;
 #define RX_BUFFER_SIZE 128
 char rxBuffer[RX_BUFFER_SIZE];
 char lastRxBuffer[RX_BUFFER_SIZE];
 volatile uint16_t rxIndex = 0;
 volatile uint8_t dataReceivedFlag = 0;
-float receivedValue;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
+/**
+ * @brief This function calculates frequency of a timer.
+ * @param htim Timer instance.
+ * @return Frequency of Timer.
+ */
+uint32_t calculate_timer_freq(TIM_HandleTypeDef *htim){
+  uint32_t timer_freq = HAL_RCC_GetPCLK1Freq() * 2;
+  uint32_t prescaler = htim->Init.Prescaler + 1;
+  uint32_t Arr = htim->Init.Period + 1;
+  uint32_t freq = timer_freq / (prescaler * Arr);
+  return freq;
+}
+
+/**
+ * @brief This function sets desired width modulation.
+ * @param htim, pointer to a timer instance, .
+ * @param pwm_power Desired width [%] in PWM Signal.
+ */
+void set_pwm_power (TIM_HandleTypeDef *htim, float pwm_power){
+	if (pwm_power == 0){
+	__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, 0);
+	}
+	uint32_t Counter_period = htim->Init.Period;
+	uint32_t pwm_val = (Counter_period*pwm_power)/100.0f;
+    __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, (uint32_t)pwm_val);
+	}
 // Inside the HAL_TIM_PeriodElapsedCallback function
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -100,7 +128,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			memset(rxBuffer, 0, RX_BUFFER_SIZE);
 		}
 
-		int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
+    // Calculate the PID output
+//    pwm_duty = Calculate_PID_out(receivedValue, temp_read);
+	pwm_duty = PID_GetOutput(&hpid1, receivedValue, temp_read);
+
+    set_pwm_power(&htim2, pwm_duty);
+
+    int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
 		HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
 	}
 }
@@ -125,13 +159,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxBuffer[rxIndex], 1);  // Ponownie włącz przerwanie
     }
 }
-uint32_t calculate_timer_freq(TIM_HandleTypeDef *htim){
-  uint32_t timer_freq = HAL_RCC_GetPCLK1Freq() * 2;
-  uint32_t prescaler = htim->Init.Prescaler + 1;
-  uint32_t Arr = htim->Init.Period + 1;
-  uint32_t freq = timer_freq / (prescaler * Arr);
-  return freq;
-}
+
 
 /* USER CODE END PFP */
 
@@ -181,14 +209,16 @@ int main(void)
   //Zmiana priorytetu przerwań, #TODO debugging.
   HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
   HAL_NVIC_SetPriority(TIM2_IRQn, 6, 0); // Przykładowy niższy priorytet
-
   //PID regulator tune
   
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+//  ARM_PID_Init(2.5f,0.0f,53.639f);
+  PID_Init(&hpid1);
   HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   while (1)
   {
     /* USER CODE END WHILE */
