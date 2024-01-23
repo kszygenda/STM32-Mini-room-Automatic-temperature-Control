@@ -165,6 +165,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	    int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
 			HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
 
+		HAL_GPIO_WritePin(GPIO_Fan_GPIO_Port, GPIO_Fan_Pin, temp_read > (receivedValue + 4));
+
 	}
 }
 
@@ -210,7 +212,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 

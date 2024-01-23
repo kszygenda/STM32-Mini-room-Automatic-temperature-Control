@@ -138,8 +138,8 @@ void Error_Handler(void);
 #define SW0_GPIO_Port GPIOB
 #define LD2_Pin GPIO_PIN_7
 #define LD2_GPIO_Port GPIOB
-#define BH1750_SCL_Pin GPIO_PIN_8
-#define BH1750_SCL_GPIO_Port GPIOB
+#define GPIO_Fan_Pin GPIO_PIN_8
+#define GPIO_Fan_GPIO_Port GPIOB
 #define BH1750_SDA_Pin GPIO_PIN_9
 #define BH1750_SDA_GPIO_Port GPIOB
 
