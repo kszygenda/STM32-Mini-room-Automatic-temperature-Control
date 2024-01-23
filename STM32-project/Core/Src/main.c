@@ -59,7 +59,7 @@ int temp_fractional;
 int temp_receivedValue_int;
 int temp_receivedValue_fractional;
 float temp_read, error, receivedValue, pid_out;
-char json_msg[64];
+char json_msg[128];
 float pwm_duty;
 #define RX_BUFFER_SIZE 128
 char rxBuffer[RX_BUFFER_SIZE];
@@ -141,7 +141,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		temp_fractional = (int)((temp_read - temp_read_int) * 1000);
 		// Write data to LCD
 		LCD_goto_line(0);
-		LCD_printf("Actual=%d.%03d[C]", temp_read_int, temp_fractional);
+		LCD_printf("Actual:%d.%03d[C]", temp_read_int, temp_fractional);
 		// Jakiś smiszny debugging dla odczytywania wartości zadaniej
 		// opisać komentarze #TODO @Bartek
 		if (dataReceivedFlag == 1){
@@ -162,7 +162,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 		pwm_duty = PID_GetOutput(&hpid1, receivedValue, temp_read);
 	    set_pwm_power(&htim2, pwm_duty);
-	    int msg_len = sprintf(json_msg, "{\"temperature\": %.2f}\r\n", temp_read);
+	    int msg_len = sprintf(json_msg, "{\"temperature\": %.2f, \"error\": %.2f, \"pwm_power\": %.2f, \"destined\": %.2f}\r\n",
+        temp_read,receivedValue-temp_read,pwm_duty,receivedValue);
 			HAL_UART_Transmit(&huart3, (uint8_t*)json_msg, msg_len, 1000);
 
 		HAL_GPIO_WritePin(GPIO_Fan_GPIO_Port, GPIO_Fan_Pin, temp_read > (receivedValue + 4));
