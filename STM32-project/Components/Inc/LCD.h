@@ -1,3 +1,16 @@
+/**
+ * @file LCD.h
+ * @brief Header file for LCD module
+ *
+ * This file contains the declarations of functions and macros for controlling an LCD module.
+ * The module supports 4-bit mode and provides functions for sending commands, writing data,
+ * writing characters, and creating custom characters. It also includes macros for controlling
+ * the GPIO pins of the LCD module.
+ *
+ * @author [Your Name]
+ */
+
+
 #ifndef __LCD_H__
 #define __LCD_H__
 
