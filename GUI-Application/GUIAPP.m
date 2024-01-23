@@ -9,7 +9,6 @@ classdef GUIAPP < matlab.apps.AppBase
         ResumeButton  matlab.ui.control.Button
         SaveButton    matlab.ui.control.Button
         SetButton      matlab.ui.control.Button
-        SimulateButton matlab.ui.control.Button
         SetTempSlider matlab.ui.control.Slider
         CurrentTempLabel matlab.ui.control.Label
         CurrentTemp_data matlab.ui.control.Label
@@ -17,7 +16,7 @@ classdef GUIAPP < matlab.apps.AppBase
         TempTrendAxes matlab.ui.control.UIAxes
         SetTempEditField matlab.ui.control.EditField
         ConnectButton matlab.ui.control.Button
-        SerialConnection 
+        SerialConnection
         % Function variables
         MyVector = [];
         t;
@@ -52,10 +51,9 @@ classdef GUIAPP < matlab.apps.AppBase
             % sample_val = randi(20);
                 str_received_data = fgetl(app.SerialConnection);
                 if ~isempty(str_received_data)
-                    data = jsondecode(str_received_data);
-                    sample_val = data.temperature;
+                    sample_val = jsondecode(str_received_data);
                 else 
-                    sample_val = 0;
+                    sample_val = [];
                 end
         end
         % Button pushed function for StartButton
@@ -67,7 +65,7 @@ classdef GUIAPP < matlab.apps.AppBase
                 delete(app.t);
             end
             app.isRunning = 1;
-            app.MyVector=[];
+            app.MyVector=[];      
             app.start_time=[];
             app.stop_time=[];
             app.t=[];
@@ -77,26 +75,61 @@ classdef GUIAPP < matlab.apps.AppBase
             % plotującej, dodającej wartości do rysowanej charakterystyki.
             % Period MUSI być zsynchronizowany z timerem STM32. 
             flush(app.SerialConnection);
-            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.01, 'TimerFcn', @(~,~) cyclic_function(app));
+            app.t = timer('ExecutionMode', 'fixedRate', 'Period', 0.001, 'TimerFcn', @(~,~) cyclic_function(app));
             start(app.t);
         end
 
         % Funkcja cykliczna 
         function cyclic_function(app)
+            samples = collect_sample(app);
             % Code to collect and plot data
-            sample_val = collect_sample(app);
-            if sample_val == 0
-                sample_val = app.MyVector(end);
+            if isempty(samples)
+                samples = app.MyVector(end,:);
+            else
+                data = [samples.temperature samples.error samples.pwm_power samples.destined];
             end
-            app.MyVector = [app.MyVector sample_val];
-            app.stop_time=toc(app.start_time);  
-            app.CurrentTemp_data.Text = num2str(app.MyVector(end)); 
-            app.TempTrendAxes.XLim = [0 app.stop_time];
-            app.t_plot = linspace(0, app.stop_time, length(app.MyVector));
-            app.TempTrendAxes.YLim = [20 max(app.MyVector)+1];
-            plot(app.TempTrendAxes, app.t_plot, app.MyVector, 'b-');
+
+            
+            app.MyVector = [app.MyVector; data];
+            app.stop_time = toc(app.start_time);  
+            app.CurrentTemp_data.Text = num2str(app.MyVector(end, 1)); % aktualizacja wyświetlanej wartości temperatury
+        
+            % Aktualizacja app.t_plot, aby odpowiadał długości app.MyVector
+            app.t_plot = linspace(0, app.stop_time, size(app.MyVector, 1));
+        
+            % Ograniczenie danych do wykresu (tylko wybrane kolumny)
+            plotData = app.MyVector(:, [1, 3, 4]);
+        
+            % Wyczyszczenie osi przed rysowaniem
+            cla(app.TempTrendAxes);
+        
+            % Rysowanie pierwszego elementu na głównej osi Y
+            yyaxis(app.TempTrendAxes, 'left');
+            plot(app.TempTrendAxes, app.t_plot, plotData(:, 1), 'b-'); % pierwszy element
+        
+            % Rysowanie czwartego elementu na głównej osi Y (zielony, przerywana linia)
+            hold(app.TempTrendAxes, 'on');
+            plot(app.TempTrendAxes, app.t_plot, plotData(:, 3), 'g--'); % czwarty element
+            hold(app.TempTrendAxes, 'off');
+        
+            % Rysowanie trzeciego elementu na osobnej osi Y
+            yyaxis(app.TempTrendAxes, 'right');
+            plot(app.TempTrendAxes, app.t_plot, plotData(:, 2), 'r-'); % trzeci element
+        
+            % Dodawanie legendy
+            yyaxis(app.TempTrendAxes, 'left');
+            legend(app.TempTrendAxes, 'current temperature', 'target temperature', 'pwm duty', 'Location', 'northwest');
+        
+            % Ustawienie limitów osi Y
+            app.TempTrendAxes.YLim = [20, 70];
+            app.TempTrendAxes.YAxis(2).Color = 'r';
+            app.TempTrendAxes.YAxis(2).Label.String = 'PWM Duty [%]';
+            app.TempTrendAxes.YAxis(2).Limits = [0, 20];
+        
             drawnow;
         end
+
+
 
         % Button pushed function for PauseButton
         function PauseButtonPushed(app, event)
@@ -158,15 +191,22 @@ classdef GUIAPP < matlab.apps.AppBase
         % Value changing function for SetTempSlider
         function SetTempSliderValueChanged(app, event)
             value = app.SetTempSlider.Value;
-            % Code to update temperature setting
-            app.SetTempEditField.Value = num2str(value); % Update edit field with slider value
+            % Aktualizuj wartość w polu tekstowym
+            app.SetTempEditField.Value = num2str(value);
         end
+
         
         % Value changing function for SetTempEditField
         function SetTempEditFieldValueChanged(app, event)
             value = str2double(app.SetTempEditField.Value);
-            % Code to update temperature setting
-            app.SetTempSlider.Value = value; % Update slider with edit field value
+            % Sprawdzanie, czy wartość mieści się w dozwolonym zakresie
+            if value < 25 || value > 60
+                % Wyświetlenie ostrzeżenia i ustawienie wartości na najbliższą dozwoloną
+                uialert(app.UIFigure, 'The temperature value must be between 25 and 60 degrees.', 'Temperature range error');
+                value = max(25, min(value, 60));
+                app.SetTempEditField.Value = num2str(value);
+            end
+            app.SetTempSlider.Value = value; % Aktualizacja suwaka
         end
 
         % Button pushed function for SetButton
@@ -193,11 +233,6 @@ classdef GUIAPP < matlab.apps.AppBase
             end
         end
 
-
-        % Button pushed function for SimulateButton
-        function SimulateButtonPushed(app, event)
-            % Placeholder for Simulate button functionality
-        end
 
         % Callback function for ConnectButton
         function ConnectButtonPushed(app, event)
@@ -319,6 +354,7 @@ classdef GUIAPP < matlab.apps.AppBase
 
             % Create SetTempSlider
             app.SetTempSlider = uislider(app.UIFigure);
+            app.SetTempSlider.Limits = [25 60];  % Ustawienie zakresu temperatury
             app.SetTempSlider.Position = [50, 60, 540, 3];
             app.SetTempSlider.ValueChangedFcn = createCallbackFcn(app, @SetTempSliderValueChanged, true);
 
@@ -340,8 +376,8 @@ classdef GUIAPP < matlab.apps.AppBase
             % Create TempTrendAxes
             app.TempTrendAxes = uiaxes(app.UIFigure);
             app.TempTrendAxes.Position = [50, 100, 540, 220]; % Adjust the size as needed
-            app.TempTrendAxes.XLabel.String = 'Time';
-            app.TempTrendAxes.YLabel.String = 'Temperature';
+            app.TempTrendAxes.XLabel.String = 'Time [s]';
+            app.TempTrendAxes.YLabel.String = 'Temperature [C]';
 
             % Create SetTempEditField
             app.SetTempEditField = uieditfield(app.UIFigure, 'text');
@@ -353,13 +389,6 @@ classdef GUIAPP < matlab.apps.AppBase
             app.SetButton.Position = [260, 340, 100, 22];
             app.SetButton.Text = 'Ustaw';
             app.SetButton.ButtonPushedFcn = createCallbackFcn(app, @SetButtonPushed, true);
-
-            % Create SimulateButton
-            app.SimulateButton = uibutton(app.UIFigure, 'push');
-            app.SimulateButton.Position = [370, 340, 100, 22];
-            app.SimulateButton.Text = 'Zasymuluj';
-            app.SimulateButton.ButtonPushedFcn = createCallbackFcn(app, @SimulateButtonPushed, true);
-        
         end
     end
 
