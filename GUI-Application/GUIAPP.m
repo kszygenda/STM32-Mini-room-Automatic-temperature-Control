@@ -5,8 +5,7 @@ classdef GUIAPP < matlab.apps.AppBase
         % GUI variables
         UIFigure      matlab.ui.Figure
         StartButton   matlab.ui.control.Button
-        PauseButton   matlab.ui.control.Button
-        ResumeButton  matlab.ui.control.Button
+        StopButton   matlab.ui.control.Button
         SaveButton    matlab.ui.control.Button
         SetButton      matlab.ui.control.Button
         SetTempSlider matlab.ui.control.Slider
@@ -18,9 +17,9 @@ classdef GUIAPP < matlab.apps.AppBase
         ConnectButton matlab.ui.control.Button
         SerialConnection
         % Function variables
+        isRunning = 0;
         MyVector = [];
         t;
-        isRunning = 0;
         t_plot = [];
         start_time;
         stop_time;
@@ -132,26 +131,16 @@ classdef GUIAPP < matlab.apps.AppBase
 
 
 
-        % Button pushed function for PauseButton
-        function PauseButtonPushed(app, event)
+        % Button pushed function for StopButton
+        function StopButtonPushed(app, event)
             if app.isRunning == 1
                 app.isRunning = 0;
-                disp('Paused')
+                disp('Stopped')
                 app.SaveButton.Visible = true;
                 stop(app.t); 
             end
         end
 
-        % Button pushed function for ResumeButton
-        function ResumeButtonPushed(app, event)
-            if app.isRunning == 0
-                app.isRunning = 1;
-                disp('Resumed')
-                app.SaveButton.Visible = false;
-                flush(app.SerialConnection);
-                start(app.t);
-            end
-        end
 
         % Button pushed function for SaveButton
         function SaveButtonPushed(app, event)
@@ -245,7 +234,7 @@ classdef GUIAPP < matlab.apps.AppBase
         
             % Set the size of the UIFigure
             figureWidth = 300;
-            figureHeight = 200;
+            figureHeight = 220;
 
              % Calculate the position to center the figure
             positionX = (screenWidth - figureWidth) / 2;
@@ -255,8 +244,8 @@ classdef GUIAPP < matlab.apps.AppBase
             dialog = uifigure('Name', 'Serial Port Connection', 'Position', [positionX, positionY, figureWidth, figureHeight]);
         
             % Create a listbox for COM port selection
-            comListBox = uilistbox(dialog, 'Position', [20 80 260 70]);
-            comListBox.Items = {'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8'}; % TODO: Replace with actual COM ports list
+            comListBox = uilistbox(dialog, 'Position', [20 80 260 120]);
+            comListBox.Items = {'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9'}; % TODO: Replace with actual COM ports list
         
             % Create Connect and Disconnect buttons
             connectButton = uibutton(dialog, 'push', 'Text', 'Connect', 'Position', [50, 20, 80, 30]);
@@ -330,17 +319,11 @@ classdef GUIAPP < matlab.apps.AppBase
             app.StartButton.Text = 'Start';
             app.StartButton.ButtonPushedFcn = createCallbackFcn(app, @StartButtonPushed, true);
 
-            % Create PauseButton
-            app.PauseButton = uibutton(app.UIFigure, 'push');
-            app.PauseButton.Position = [160, 420, 100, 22];
-            app.PauseButton.Text = 'Pause';
-            app.PauseButton.ButtonPushedFcn = createCallbackFcn(app, @PauseButtonPushed, true);
-
-            % Create ResumeButton
-            app.ResumeButton = uibutton(app.UIFigure, 'push');
-            app.ResumeButton.Position = [270, 420, 100, 22];
-            app.ResumeButton.Text = 'Resume';
-            app.ResumeButton.ButtonPushedFcn = createCallbackFcn(app, @ResumeButtonPushed, true);
+            % Create StopButton
+            app.StopButton = uibutton(app.UIFigure, 'push');
+            app.StopButton.Position = [160, 420, 100, 22];
+            app.StopButton.Text = 'Stop';
+            app.StopButton.ButtonPushedFcn = createCallbackFcn(app, @StopButtonPushed, true);
 
             % Create SaveButton
             app.SaveButton = uibutton(app.UIFigure, 'push');
