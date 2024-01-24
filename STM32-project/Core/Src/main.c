@@ -103,9 +103,9 @@ float encoder_destined_set(float Destined_temperature) {
 
     // Handle wrap-around cases
     if ((encoder_val == 0 && prev_encoder_val == 80) || diff > 0) {
-        Destined_temperature += 0.5f;
-    } else if ((encoder_val == 80 && prev_encoder_val == 0) || diff < 0) {
         Destined_temperature -= 0.5f;
+    } else if ((encoder_val == 80 && prev_encoder_val == 0) || diff < 0) {
+        Destined_temperature += 0.5f;
     }
 
     if (Destined_temperature <= 25.0f){

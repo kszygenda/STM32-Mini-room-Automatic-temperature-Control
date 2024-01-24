@@ -5262,10 +5262,10 @@ float encoder_destined_set(float Destined_temperature) {
  8002aee:	68bb      	ldr	r3, [r7, #8]
  8002af0:	2b00      	cmp	r3, #0
  8002af2:	dd08      	ble.n	8002b06 <encoder_destined_set+0x42>
-        Destined_temperature += 0.5f;
+        Destined_temperature -= 0.5f;
  8002af4:	edd7 7a01 	vldr	s15, [r7, #4]
  8002af8:	eeb6 7a00 	vmov.f32	s14, #96	; 0x3f000000  0.5
- 8002afc:	ee77 7a87 	vadd.f32	s15, s15, s14
+ 8002afc:	ee77 7ac7 	vsub.f32	s15, s15, s14
  8002b00:	edc7 7a01 	vstr	s15, [r7, #4]
  8002b04:	e011      	b.n	8002b2a <encoder_destined_set+0x66>
     } else if ((encoder_val == 80 && prev_encoder_val == 0) || diff < 0) {
@@ -5279,10 +5279,10 @@ float encoder_destined_set(float Destined_temperature) {
  8002b14:	68bb      	ldr	r3, [r7, #8]
  8002b16:	2b00      	cmp	r3, #0
  8002b18:	da07      	bge.n	8002b2a <encoder_destined_set+0x66>
-        Destined_temperature -= 0.5f;
+        Destined_temperature += 0.5f;
  8002b1a:	edd7 7a01 	vldr	s15, [r7, #4]
  8002b1e:	eeb6 7a00 	vmov.f32	s14, #96	; 0x3f000000  0.5
- 8002b22:	ee77 7ac7 	vsub.f32	s15, s15, s14
+ 8002b22:	ee77 7a87 	vadd.f32	s15, s15, s14
  8002b26:	edc7 7a01 	vstr	s15, [r7, #4]
     }
 
