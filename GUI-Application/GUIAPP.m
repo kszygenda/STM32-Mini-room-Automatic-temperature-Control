@@ -194,7 +194,7 @@ classdef GUIAPP < matlab.apps.AppBase
             if value < 25 || value > 60
                 % Wyświetlenie ostrzeżenia i ustawienie wartości na najbliższą dozwoloną
                 uialert(app.UIFigure, 'The temperature value must be between 25 and 60 degrees. The default temperature is set (25 degrees celcius)', 'Temperature range error');
-                value = min(25, min(value, 60));
+                value = 25;
                 app.SetTempEditField.Value = num2str(value);
             end
             app.SetTempSlider.Value = value; % Aktualizacja suwaka
@@ -373,7 +373,7 @@ classdef GUIAPP < matlab.apps.AppBase
             % Create SetButton
             app.SetButton = uibutton(app.UIFigure, 'push');
             app.SetButton.Position = [260, 340, 100, 22];
-            app.SetButton.Text = 'Ustaw';
+            app.SetButton.Text = 'Set';
             app.SetButton.ButtonPushedFcn = createCallbackFcn(app, @SetButtonPushed, true);
         end
     end
