@@ -5,5 +5,3 @@ The rest is done by Automatic regulation system, which controlls the heater and 
 This project uses GUI application to set destined temperature/plot data in real time.
 Current and destined temperatures are display with LCD 2x16 screen. 
 Destined temperature might also be adjusted using encoder. 
-## Other Features
-TODO
